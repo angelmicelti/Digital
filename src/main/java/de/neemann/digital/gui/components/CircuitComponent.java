@@ -135,6 +135,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private Style highLightStyle = Style.HIGHLIGHT;
     private Mouse mouse = Mouse.getMouse();
     private Circuit shallowCopy;
+    private CircuitScrollPanel circuitScrollPanel;
 
 
     /**
@@ -225,6 +226,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             transform.scale(f, f);
             transform.translate(-pos.x, -pos.y);
             isManualScale = true;
+            if (circuitScrollPanel != null)
+                circuitScrollPanel.transformChanged(transform);
             graphicHasChanged();
         });
 
@@ -427,8 +430,11 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      */
     public void modify(Modification<Circuit> modification) {
         try {
-            if (modification != null)
+            if (modification != null) {
                 undoManager.apply(modification);
+                if (circuitScrollPanel != null)
+                    circuitScrollPanel.sizeChanged();
+            }
         } catch (ModifyException e) {
             throw new RuntimeException("internal error in modify", e);
         }
@@ -912,6 +918,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         undoAction.setEnabled(false);
         redoAction.setEnabled(false);
 
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.sizeChanged();
         fitCircuit();
         setModeAndReset(false, SyncAccess.NOSYNC);
     }
@@ -944,6 +952,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
         if (!newTrans.equals(transform)) {
             transform = newTrans;
+            if (circuitScrollPanel != null)
+                circuitScrollPanel.transformChanged(transform);
             graphicHasChanged();
         }
     }
@@ -959,6 +969,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         transform.scale(f, f);
         transform.translate(-dif.x, -dif.y);
         isManualScale = true;
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.transformChanged(transform);
         graphicHasChanged();
     }
 
@@ -971,6 +983,40 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     public void translateCircuit(int dx, int dy) {
         transform.translate(dx, dy);
         isManualScale = true;
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.transformChanged(transform);
+        graphicHasChanged();
+    }
+
+    /**
+     * Translates the circuit.
+     *
+     * @param x x position
+     */
+    void translateCircuitToX(double x) {
+        double[] matrix = new double[6];
+        transform.getMatrix(matrix);
+        matrix[4] = x;
+        transform = new AffineTransform(matrix);
+        isManualScale = true;
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.transformChanged(transform);
+        graphicHasChanged();
+    }
+
+    /**
+     * Translates the circuit.
+     *
+     * @param y y position
+     */
+    void translateCircuitToY(double y) {
+        double[] matrix = new double[6];
+        transform.getMatrix(matrix);
+        matrix[5] = y;
+        transform = new AffineTransform(matrix);
+        isManualScale = true;
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.transformChanged(transform);
         graphicHasChanged();
     }
 
@@ -1192,6 +1238,13 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         undoManager.addListener(listener);
     }
 
+    /**
+     * @return true is component is in manual scale mode
+     */
+    boolean isManualScale() {
+        return isManualScale;
+    }
+
     private final class PlusMinusAction extends ToolTipAction {
         private final int delta;
 
@@ -1265,8 +1318,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                     Vector delta = newPos.sub(pos);
                     double s = transform.getScaleX();
                     transform.translate(delta.x / s, delta.y / s);
-                    pos = newPos;
                     isManualScale = true;
+                    if (circuitScrollPanel != null)
+                        circuitScrollPanel.transformChanged(transform);
+                    pos = newPos;
                     graphicHasChanged();
                 }
             }
@@ -1496,6 +1551,14 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             wires.add(new ModifyInsertWire(new Wire(pos, p.getPos())));
     }
 
+    /**
+     * Sets the circuit panel used for scrolling
+     *
+     * @param circuitScrollPanel the panel
+     */
+    public void setCircuitScrollPanel(CircuitScrollPanel circuitScrollPanel) {
+        this.circuitScrollPanel = circuitScrollPanel;
+    }
 
     private final class MouseControllerMoveElement extends MouseController {
         private VisualElement visualElement;
@@ -1550,9 +1613,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         public void delete() {
             if (!isLocked()) {
                 getCircuit().delete(visualElement);
+                isManualScale = true;
                 modify(new ModifyDeleteElement(originalVisualElement));
                 mouseNormal.activate();
-                isManualScale = true;
             }
         }
 
@@ -1617,9 +1680,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         @Override
         public void delete() {
             getCircuit().delete(wire);
+            isManualScale = true;
             modify(new ModifyDeleteWire(originalWire));
             mouseNormal.activate();
-            isManualScale = true;
         }
 
         @Override
@@ -1947,9 +2010,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         @Override
         public void delete() {
             if (!isLocked()) {
+                isManualScale = true;
                 modify(new ModifyDeleteRect(Vector.min(corner1, corner2), Vector.max(corner1, corner2)));
                 mouseNormal.activate();
-                isManualScale = true;
             }
         }
 
