@@ -5,12 +5,13 @@
  */
 package de.neemann.digital.core.memory;
 
-import de.neemann.digital.core.memory.importer.DataFieldValueArray;
 import de.neemann.digital.core.memory.importer.LogisimReader;
 import de.neemann.digital.core.memory.importer.ValueArray;
 import junit.framework.TestCase;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 
 /**
@@ -62,7 +63,7 @@ public class DataFieldTest extends TestCase {
                 "7\n" +
                 "8\n" +
                 "9\n" +
-                "a\n", w.toString());
+                "a\n", w.toString().replace("\r",""));
     }
 
     public void testSaveEmpty() throws IOException {
@@ -71,7 +72,7 @@ public class DataFieldTest extends TestCase {
         StringWriter w = new StringWriter();
         data.saveTo(w);
 
-        assertEquals("v2.0 raw\n", w.toString());
+        assertEquals("v2.0 raw\n", w.toString().replace("\r",""));
     }
 
     public void testSaveRLE() throws IOException {
@@ -97,7 +98,7 @@ public class DataFieldTest extends TestCase {
                 "7*6\n" +
                 "8*7\n" +
                 "9*8\n" +
-                "10*9\n", w.toString());
+                "10*9\n", w.toString().replace("\r",""));
 
         DataField readData = new DataField(100);
         LogisimReader r = new LogisimReader(new StringReader(w.toString()));
@@ -149,7 +150,7 @@ public class DataFieldTest extends TestCase {
         });
         readData.trim();
 
-        assertTrue(Arrays.equals(data.getData(), readData.getData()));
+        assertEquals(true, Arrays.equals(data.getData(), readData.getData()));
     }
 
 }

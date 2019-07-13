@@ -1,6 +1,8 @@
 Release Notes
 
 head, planned as v0.23
+- Added generic circuits. Now it is possible to parameterize a sub circuit.
+  Allows e.g. the creation of a barrel-shifter with selectable bit width.
 - Circuit analyser is now able to analyse the built-in counters.
 - Simplified the integration of FPGA boards.
   Board integration is now possible without creating Java code or

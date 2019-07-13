@@ -21,6 +21,8 @@ import de.neemann.digital.draw.elements.PinException;
 import de.neemann.digital.draw.elements.VisualElement;
 import de.neemann.digital.draw.library.ElementLibrary;
 import de.neemann.digital.draw.library.ElementNotFoundException;
+import de.neemann.digital.draw.library.ElementTypeDescriptionCustom;
+import de.neemann.digital.draw.library.ResolveGenerics;
 import de.neemann.digital.hdl.model2.clock.HDLClockIntegrator;
 import de.neemann.digital.hdl.model2.expression.*;
 
@@ -37,6 +39,8 @@ public class HDLModel implements Iterable<HDLCircuit> {
     private HashMap<Circuit, HDLCircuit> circuitMap;
     private HDLCircuit main;
     private Renaming renaming;
+    private ResolveGenerics resolveGenerics = new ResolveGenerics();
+    private HashMap<String, GenericsCache> genericInstanceNumbers;
 
     /**
      * Creates a new instance
@@ -46,6 +50,7 @@ public class HDLModel implements Iterable<HDLCircuit> {
     public HDLModel(ElementLibrary elementLibrary) {
         this.elementLibrary = elementLibrary;
         circuitMap = new HashMap<>();
+        genericInstanceNumbers = new HashMap<>();
     }
 
     /**
@@ -59,18 +64,40 @@ public class HDLModel implements Iterable<HDLCircuit> {
     public HDLNode createNode(VisualElement v, HDLCircuit parent) throws HDLException {
         try {
             ElementTypeDescription td = elementLibrary.getElementType(v.getElementName());
-            if (td instanceof ElementLibrary.ElementTypeDescriptionCustom) {
-                ElementLibrary.ElementTypeDescriptionCustom tdc = (ElementLibrary.ElementTypeDescriptionCustom) td;
+            if (td instanceof ElementTypeDescriptionCustom) {
+                ElementTypeDescriptionCustom tdc = (ElementTypeDescriptionCustom) td;
 
-                HDLCircuit c = circuitMap.get(tdc.getCircuit());
-                if (c == null) {
-                    c = new HDLCircuit(tdc.getCircuit(), v.getElementName(), this);
-                    circuitMap.put(tdc.getCircuit(), c);
+                final Circuit circuit = tdc.getCircuit();
+                if (circuit.getAttributes().get(Keys.IS_GENERIC)) {
+                    ResolveGenerics.CircuitHolder holder = resolveGenerics.resolveCircuit(v, circuit, elementLibrary);
+
+                    GenericsCache cache = genericInstanceNumbers.computeIfAbsent(v.getElementName(), t -> new GenericsCache());
+
+                    HDLCircuit c = cache.getHDLCircuit(holder.getArgs());
+                    if (c == null) {
+                        String elementName = v.getElementName();
+                        elementName = cleanName(elementName.substring(0, elementName.length() - 4) + "_gen" + cache.getNum() + ".dig");
+                        c = new HDLCircuit(holder.getCircuit(), elementName, this);
+                        cache.addHDLCircuit(c, holder.getArgs());
+                        circuitMap.put(holder.getCircuit(), c);
+                    }
+
+                    return addInputsOutputs(
+                            new HDLNodeCustom(v.getElementAttributes(), c),
+                            v, parent).createExpressions();
+
+                } else {
+                    HDLCircuit c = circuitMap.get(circuit);
+                    final String elementName = cleanName(v.getElementName());
+                    if (c == null) {
+                        c = new HDLCircuit(circuit, elementName, this);
+                        circuitMap.put(circuit, c);
+                    }
+
+                    return addInputsOutputs(
+                            new HDLNodeCustom(v.getElementAttributes(), c),
+                            v, parent).createExpressions();
                 }
-
-                return addInputsOutputs(
-                        new HDLNodeCustom(v.getElementName(), v.getElementAttributes(), c),
-                        v, parent).createExpressions();
 
             } else if (v.equalsDescription(Const.DESCRIPTION)) {
                 final HDLNodeAssignment node = createExpression(v, parent, td);
@@ -128,6 +155,10 @@ public class HDLModel implements Iterable<HDLCircuit> {
         } catch (ElementNotFoundException | PinException | NodeException e) {
             throw new HDLException("error creating node", e);
         }
+    }
+
+    private String cleanName(String s) {
+        return s.replace("-", "_");
     }
 
     private Expression createOperation(ArrayList<HDLPort> inputs, ExprOperate.Operation op) {
@@ -262,6 +293,27 @@ public class HDLModel implements Iterable<HDLCircuit> {
         @Override
         public int getBits(String name) {
             return values.get(name).getBits();
+        }
+    }
+
+    private static final class GenericsCache {
+        private int num;
+        private HashMap<ResolveGenerics.Args, HDLCircuit> map;
+
+        private GenericsCache() {
+            map = new HashMap<>();
+        }
+
+        private int getNum() {
+            return num++;
+        }
+
+        private HDLCircuit getHDLCircuit(ResolveGenerics.Args args) {
+            return map.get(args);
+        }
+
+        private void addHDLCircuit(HDLCircuit c, ResolveGenerics.Args args) {
+            map.put(args, c);
         }
     }
 }
