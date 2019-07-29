@@ -11,12 +11,10 @@ import de.neemann.digital.analyse.TruthTable;
 import de.neemann.digital.analyse.TruthTableTableModel;
 import de.neemann.digital.analyse.expression.Expression;
 import de.neemann.digital.analyse.expression.ExpressionException;
+import de.neemann.digital.analyse.expression.NamedExpression;
 import de.neemann.digital.analyse.expression.Variable;
-import de.neemann.digital.analyse.expression.format.FormatToExpression;
-import de.neemann.digital.analyse.expression.format.FormatToTableLatex;
 import de.neemann.digital.analyse.expression.format.FormatterException;
 import de.neemann.digital.analyse.expression.modify.*;
-import de.neemann.digital.analyse.format.TruthTableFormatterLaTeX;
 import de.neemann.digital.analyse.quinemc.BoolTableByteArray;
 import de.neemann.digital.builder.ATF150x.ATFDevice;
 import de.neemann.digital.builder.ExpressionToFileExporter;
@@ -29,6 +27,9 @@ import de.neemann.digital.core.element.ElementAttributes;
 import de.neemann.digital.core.element.Key;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.draw.elements.Circuit;
+import de.neemann.digital.draw.graphics.text.ParseException;
+import de.neemann.digital.draw.graphics.text.Parser;
+import de.neemann.digital.draw.graphics.text.formatter.PlainTextFormatter;
 import de.neemann.digital.draw.library.ElementLibrary;
 import de.neemann.digital.draw.shapes.ShapeFactory;
 import de.neemann.digital.gui.Main;
@@ -62,7 +63,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
-import static de.neemann.digital.draw.graphics.GraphicSVG.escapeXML;
+import static de.neemann.digital.analyse.ModelAnalyser.addOne;
 
 /**
  *
@@ -93,7 +94,7 @@ public class TableDialog extends JDialog {
         }
     }
 
-    private final JTextPane statusBar;
+    private final ExpressionComponent statusBar;
     private final JTable table;
     private final Font font;
     private final ElementLibrary library;
@@ -127,19 +128,14 @@ public class TableDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         kvMap = new KarnaughMapDialog(this, (boolTable, row) -> model.incValue(boolTable, row));
 
-        statusBar = new JTextPane();
-        statusBar.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE); // without this setFont not work
-        statusBar.setContentType("text/html");
-        statusBar.setEditable(false);
-        statusBar.setBackground(null);
-        statusBar.setBorder(null);
-        statusBar.setText("-");
+        statusBar = new ExpressionComponent();
         font = Screen.getInstance().getFont(1.66f);
         statusBar.setFont(font);
         table = new JTable(model);
         JComboBox<String> comboBox = new JComboBox<>(TruthTableTableModel.STATENAMES);
         table.setDefaultEditor(Integer.class, new DefaultCellEditor(comboBox));
         table.setDefaultRenderer(Integer.class, new CenterDefaultTableCellRenderer());
+        table.getTableHeader().setDefaultRenderer(new StringDefaultTableCellRenderer());
         table.setRowHeight(font.getSize() * 6 / 5);
 
         table.getInputMap().put(KeyStroke.getKeyStroke("0"), "0_ACTION");
@@ -274,7 +270,7 @@ public class TableDialog extends JDialog {
         attr.set(Keys.LABEL, name);
         ElementAttributes modified = new AttributeDialog(this, pos, LIST, attr).showDialog();
         if (modified != null) {
-            final String newName = modified.get(Keys.LABEL).trim().replace(' ', '_');
+            final String newName = modified.get(Keys.LABEL).trim().replace(' ', '-');
             if (!newName.equals(name))
                 model.setColumnName(columnIndex, newName);
         }
@@ -324,11 +320,15 @@ public class TableDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    ExpressionListener expressionListener = new LaTeXExpressionListener(model);
+                    final LaTeXExpressionListener laTeXExpressionListener = new LaTeXExpressionListener(model);
+                    ExpressionListener expressionListener = laTeXExpressionListener;
                     if (createJK.isSelected())
                         expressionListener = new ExpressionListenerJK(expressionListener);
                     lastGeneratedExpressions.replayTo(expressionListener);
                     expressionListener.close();
+
+                    new ShowStringDialog(TableDialog.this, Lang.get("win_table_exportDialog"),
+                            laTeXExpressionListener.toString()).setVisible(true);
                 } catch (ExpressionException | FormatterException e1) {
                     new ErrorMessage(Lang.get("msg_errorDuringCalculation")).addCause(e1).show(TableDialog.this);
                 }
@@ -355,6 +355,8 @@ public class TableDialog extends JDialog {
         createJK = new JCheckBoxMenuItem(Lang.get("menu_table_JK"));
         createJK.addActionListener(e -> calculateExpressions());
         fileMenu.add(createJK);
+
+        fileMenu.add(allSolutionsDialog.getReopenAction());
 
         return fileMenu;
     }
@@ -606,7 +608,7 @@ public class TableDialog extends JDialog {
     private void calculateExpressions() {
         try {
             LOGGER.info("start optimization");
-            ExpressionListener expressionListener = new HTMLExpressionListener();
+            ExpressionListener expressionListener = new OutputExpressionListener();
 
             if (createJK.isSelected())
                 expressionListener = new ExpressionListenerJK(expressionListener);
@@ -688,7 +690,7 @@ public class TableDialog extends JDialog {
         public void actionPerformed(ActionEvent actionEvent) {
             ArrayList<Variable> vars = new ArrayList<>();
             for (int i = n - 1; i >= 0; i--)
-                vars.add(new Variable("Q_" + i + "n"));
+                vars.add(new Variable("Q_" + i + "^n"));
             TruthTable truthTable = new TruthTable(vars);
             int i = n - 1;
             int rows = 1 << n;
@@ -696,7 +698,7 @@ public class TableDialog extends JDialog {
                 BoolTableByteArray val = new BoolTableByteArray(rows);
                 for (int n = 0; n < rows; n++)
                     val.set(n, ((n + 1) >> i) & 1);
-                truthTable.addResult(v.getIdentifier() + "+1", val);
+                truthTable.addResult(addOne(v.getIdentifier()), val);
                 i--;
             }
 
@@ -715,9 +717,9 @@ public class TableDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             ArrayList<Variable> vars = new ArrayList<>();
-            vars.add(new Variable("dir"));
+            vars.add(new Variable("D"));
             for (int i = n - 1; i >= 0; i--)
-                vars.add(new Variable("Q_" + i + "n"));
+                vars.add(new Variable("Q_" + i + "^n"));
             TruthTable truthTable = new TruthTable(vars);
             int i = n - 1;
             int rows = 1 << (n + 1);
@@ -729,7 +731,7 @@ public class TableDialog extends JDialog {
                     else
                         val.set(n, ((n + 1) >> i) & 1);
                 }
-                truthTable.addResult(vars.get(vi).getIdentifier() + "+1", val);
+                truthTable.addResult(addOne(vars.get(vi).getIdentifier()), val);
                 i--;
             }
 
@@ -759,73 +761,61 @@ public class TableDialog extends JDialog {
         }
     }
 
-    private final class HTMLExpressionListener implements ExpressionListener {
-        private FormatToExpression htmlFormatter = new HTMLFormatter(FormatToExpression.getDefaultFormat());
-        private final StringBuilder html;
-        private int count;
-        private String firstExp;
-
-        private HTMLExpressionListener() {
-            html = new StringBuilder("<html><table style=\"white-space: nowrap\">\n");
-            count = 0;
+    private final class StringDefaultTableCellRenderer extends DefaultTableCellRenderer {
+        private StringDefaultTableCellRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER);
         }
 
         @Override
-        public void resultFound(String name, Expression expression) throws FormatterException {
-            if (count == 0)
-                firstExp = "<html>" + htmlFormatter.identifier(name) + "=" + htmlFormatter.format(expression) + "</html>";
-            html.append("<tr>");
-            html.append("<td>").append(htmlFormatter.identifier(name)).append("</td>");
-            html.append("<td>=</td>");
-            html.append("<td>").append(htmlFormatter.format(expression)).append("</td>");
-            html.append("</tr>\n");
-            count++;
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            label.setBackground(MYGRAY);
+
+            try {
+                label.setText(PlainTextFormatter.format(new Parser(value.toString()).parse()));
+            } catch (ParseException e) {
+                label.setText(value.toString());
+            }
+            setBorder(BorderFactory.createRaisedBevelBorder());
+
+            return label;
+        }
+    }
+
+    private final class OutputExpressionListener implements ExpressionListener {
+        private final ArrayList<Expression> expressions;
+
+        private OutputExpressionListener() {
+            expressions = new ArrayList<>();
+        }
+
+        @Override
+        public void resultFound(String name, Expression expression) {
+            if (name.endsWith("^n+1"))
+                name = name.substring(0, name.length() - 4) + "^{n+1}";
+            expressions.add(new NamedExpression(name, expression));
         }
 
         @Override
         public void close() {
-            html.append("</table></html>");
-
             SwingUtilities.invokeLater(() -> {
-                switch (count) {
+                switch (expressions.size()) {
                     case 0:
                         statusBar.setVisible(false);
                         allSolutionsDialog.setNeeded(false);
                         break;
                     case 1:
                         statusBar.setVisible(true);
-                        statusBar.setText(firstExp);
+                        statusBar.setExpression(expressions.get(0));
                         allSolutionsDialog.setNeeded(false);
                         break;
                     default:
                         statusBar.setVisible(false);
-                        allSolutionsDialog.setText(html.toString());
+                        allSolutionsDialog.setExpressions(expressions);
                         allSolutionsDialog.setNeeded(true);
+                        toFront();
                 }
             });
-        }
-    }
-
-    private final static class HTMLFormatter extends FormatToExpression {
-        private HTMLFormatter(FormatToExpression format) {
-            super(format);
-        }
-
-        @Override
-        public String identifier(String ident) {
-            ident = escapeXML(ident);
-            int p = ident.indexOf("_");
-            if (p < 0)
-                return ident;
-            else
-                return ident.substring(0, p) + "<sub>" + checkBrace(ident.substring(p + 1)) + "</sub>";
-        }
-
-        private String checkBrace(String s) {
-            if (s.length() > 2 && s.charAt(0) == '{' && s.charAt(s.length() - 1) == '}')
-                return s.substring(1, s.length() - 1);
-            else
-                return s;
         }
     }
 
@@ -854,33 +844,6 @@ public class TableDialog extends JDialog {
                     r = 0;
             }
             table.changeSelection(r, c, false, false);
-        }
-    }
-
-    private final class LaTeXExpressionListener implements ExpressionListener {
-        private final StringBuilder sb;
-
-        private LaTeXExpressionListener(TruthTableTableModel model) throws ExpressionException {
-            sb = new StringBuilder();
-            if (model.getTable().getRows() <= 256) {
-                String text = new TruthTableFormatterLaTeX().format(model.getTable());
-                sb.append(text);
-            }
-            sb.append("\\begin{eqnarray*}\n");
-        }
-
-        @Override
-        public void resultFound(String name, Expression expression) throws FormatterException {
-            sb.append(FormatToTableLatex.formatIdentifier(name))
-                    .append("&=&")
-                    .append(FormatToExpression.FORMATTER_LATEX.format(expression))
-                    .append("\\\\\n");
-        }
-
-        @Override
-        public void close() {
-            sb.append("\\end{eqnarray*}\n");
-            new ShowStringDialog(TableDialog.this, Lang.get("win_table_exportDialog"), sb.toString()).setVisible(true);
         }
     }
 

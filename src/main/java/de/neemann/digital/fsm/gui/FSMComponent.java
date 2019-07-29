@@ -50,6 +50,7 @@ public class FSMComponent extends JComponent {
     private Vector lastMousePos;
     private State newTransitionFromState;
     private Vector newTransitionStartPos;
+    private String lastCondition = "";
 
     /**
      * Creates a new component
@@ -102,7 +103,7 @@ public class FSMComponent extends JComponent {
                     if (newTransitionStartPos.sub(posVector).len() > MIN_NEW_TRANS_DIST) {
                         Movable target = fsm.getMovable(posVector);
                         if (target instanceof State)
-                            fsm.add(new Transition(newTransitionFromState, (State) target, ""));
+                            fsm.add(new Transition(newTransitionFromState, (State) target, lastCondition));
                     }
                     newTransitionFromState = null;
                     repaint();
@@ -191,6 +192,10 @@ public class FSMComponent extends JComponent {
                 point, attr, STATE_EDIT_KEYS);
         ad.setTitle(Lang.get("msg_fsmNewState"));
         ElementAttributes newAttr = ad.showDialog();
+
+        if (newAttr == null && ad.isOkPressed())
+            newAttr = attr;
+
         if (newAttr != null) {
             fsm.add(new State(newAttr.get(Keys.LABEL))
                     .setNumber(newAttr.get(KEY_NUMBER))
@@ -231,7 +236,8 @@ public class FSMComponent extends JComponent {
                 point, attr, KEY_CONDITION, KEY_VALUES);
         ElementAttributes newAttr = ad.showDialog();
         if (newAttr != null) {
-            transition.setCondition(newAttr.get(KEY_CONDITION));
+            lastCondition = newAttr.get(KEY_CONDITION);
+            transition.setCondition(lastCondition);
             transition.setValues(newAttr.get(KEY_VALUES));
             repaint();
         }
