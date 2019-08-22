@@ -1264,6 +1264,7 @@
   <string name="lib_more">mais</string>
   <string name="lib_ram">RAM</string>
   <string name="lib_eeprom">EEPROM</string>
+  <string name="menu_window">Janela</string>
   <string name="menu_about">Sobre</string>
   <string name="menu_analyse">Análises</string>
   <string name="menu_analyse_tt">Analisar o circuito corrente</string>
@@ -1851,4 +1852,6 @@ Portanto, o sinal 'D_out' também será avaliado para se verificar o valor desse
   <string name="tutorial11">Rotular todas as entradas e as saídas.</string>
   <string name="tutorialUniqueIdents">Entradas e saídas sempre deverão ter nomes únicos.</string>
   <string name="tutorialNotNeeded">Pular o tutorial</string>
+  <string name="msg_fsmTransition">Transição</string>
+  <string name="msg_fsmState">Estado</string>
 </resources>

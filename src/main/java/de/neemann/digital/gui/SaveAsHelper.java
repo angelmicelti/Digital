@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.HashSet;
 
 /**
- * Helper to handle the overwrite conformation
+ * Helper to handle the overwrite confirmation
  */
 public final class SaveAsHelper {
     private static final HashSet<String> KNOWN = new HashSet<>();
@@ -31,6 +31,9 @@ public final class SaveAsHelper {
         KNOWN.add("csv");
         KNOWN.add("gif");
         KNOWN.add("png");
+        KNOWN.add("tt2");
+        KNOWN.add("cupl");
+        KNOWN.add("jed");
     }
 
     private final Component parent;

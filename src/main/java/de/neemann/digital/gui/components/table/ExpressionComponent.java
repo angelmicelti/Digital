@@ -29,7 +29,8 @@ public class ExpressionComponent extends JComponent {
      */
     public void setExpression(Expression expression) {
         ArrayList<Expression> l = new ArrayList<>();
-        l.add(expression);
+        if (expression != null)
+            l.add(expression);
         setExpressions(l);
     }
 
@@ -43,7 +44,12 @@ public class ExpressionComponent extends JComponent {
         updateComponentSize(getGraphics());
     }
 
-    private void updateComponentSize(Graphics gr) {
+    /**
+     * Updates the components size
+     *
+     * @param gr the Graphics instance to use
+     */
+    protected void updateComponentSize(Graphics gr) {
         if (gr != null) {
             final Dimension preferredSize = calcSize(gr);
             setPreferredSize(preferredSize);
@@ -57,9 +63,9 @@ public class ExpressionComponent extends JComponent {
 
     @Override
     protected void paintComponent(Graphics graphics) {
-        graphics.setColor(Color.WHITE);
+        graphics.setColor(getBackground());
         graphics.fillRect(0, 0, getWidth(), getHeight());
-        graphics.setColor(Color.BLACK);
+        graphics.setColor(getForeground());
 
         if (expressions == null)
             return;
@@ -91,7 +97,7 @@ public class ExpressionComponent extends JComponent {
 
     private Dimension calcSize(Graphics graphics) {
         Graphics2D gr = getGraphics2D(graphics);
-        int lineSpacing = getFont().getSize() / 2;
+        int lineSpacing = gr.getFont().getSize() / 2;
         int dx = 0;
         int y = 0;
         for (Expression e : expressions) {

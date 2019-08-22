@@ -240,6 +240,8 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         library.addListener(librarySelector);
         menuBar.add(librarySelector.buildMenu(insertHistory, circuitComponent));
 
+        menuBar.add(WindowManager.getInstance().registerAndCreateMenu(this));
+
         JMenu helpMenu = new JMenu(Lang.get("menu_help"));
         helpMenu.add(new ToolTipAction(Lang.get("menu_help_elements")) {
             @Override
@@ -709,7 +711,10 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         ToolTipAction editSettings = new ToolTipAction(Lang.get("menu_editSettings")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ElementAttributes modified = new AttributeDialog(Main.this, Settings.getInstance().getKeys(), Settings.getInstance().getAttributes()).showDialog();
+                ElementAttributes modified =
+                        new AttributeDialog(Main.this, Settings.getInstance().getKeys(), Settings.getInstance().getAttributes())
+                                .setDialogTitle(Lang.get("menu_editSettings"))
+                                .showDialog();
                 if (modified != null) {
                     FormatToExpression.setDefaultFormat(modified.get(Keys.SETTINGS_EXPRESSION_FORMAT));
 
@@ -1272,6 +1277,25 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             }
         });
         stateManager.setActualState(stoppedState);
+    }
+
+    /**
+     * @return returns true if one of the children has the focus.
+     */
+    public boolean hasMouseFocus() {
+        return checkFocus(getContentPane());
+    }
+
+    private static boolean checkFocus(Container contentPane) {
+        for (int i = 0; i < contentPane.getComponentCount(); i++) {
+            Component c = contentPane.getComponent(i);
+            if (c.hasFocus())
+                return true;
+            if (c instanceof Container)
+                if (checkFocus((Container) c))
+                    return true;
+        }
+        return false;
     }
 
     private class RunModelState extends State {

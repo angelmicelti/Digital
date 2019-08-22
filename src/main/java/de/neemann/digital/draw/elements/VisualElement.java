@@ -149,10 +149,17 @@ public class VisualElement implements Drawable, Movable, AttributeListener {
      */
     public boolean matches(Vector p, boolean includeText) {
         GraphicMinMax m = getMinMax(includeText);
-        return (m.getMin().x <= p.x)
-                && (m.getMin().y <= p.y)
-                && (p.x <= m.getMax().x)
-                && (p.y <= m.getMax().y);
+        if (getShape().onlyBorderClickable()) {
+            int width = SIZE;
+            return ((Math.abs(p.x - m.getMin().x) < width || Math.abs(p.x - m.getMax().x) < width)
+                    && (m.getMin().y <= p.y) && (p.y <= m.getMax().y))
+                    || ((Math.abs(p.y - m.getMin().y) < width || Math.abs(p.y - m.getMax().y) < width)
+                    && (m.getMin().x <= p.x) && (p.x <= m.getMax().x));
+        } else
+            return (m.getMin().x <= p.x)
+                    && (m.getMin().y <= p.y)
+                    && (p.x <= m.getMax().x)
+                    && (p.y <= m.getMax().y);
     }
 
     /**
@@ -401,7 +408,7 @@ public class VisualElement implements Drawable, Movable, AttributeListener {
      */
     public boolean elementDragged(CircuitComponent cc, Point pos, Vector posInComponent, SyncAccess modelSync) {
         if (interactor != null)
-            return interactor.dragged(cc, posInComponent, getTransform(), ioState, element, modelSync);
+            return interactor.dragged(cc, pos, posInComponent, getTransform(), ioState, element, modelSync);
         else
             return false;
     }
@@ -473,13 +480,6 @@ public class VisualElement implements Drawable, Movable, AttributeListener {
      */
     public boolean isInteractive() {
         return interactor != null;
-    }
-
-    /**
-     * @return true is the shape is just a decorating shape
-     */
-    public boolean isDecoratingShape() {
-        return getShape() instanceof DecoratingShape;
     }
 
     /**

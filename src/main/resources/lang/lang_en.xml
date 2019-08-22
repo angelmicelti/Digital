@@ -214,7 +214,8 @@
     <string name="elem_Seven-Seg_pin_f">This input controls the upper, left, vertical line.</string>
     <string name="elem_Seven-Seg_pin_g">This input controls the middle, horizontal line.</string>
     <string name="elem_Seven-Seg_pin_dp">This input controls the decimal point.</string>
-    <string name="elem_Seven-Seg_pin_cc">Common Cathode. To turn on the LEDs, this input needs to be low.</string>
+    <string name="elem_Seven-Seg_pin_cc">Common cathode. To turn on the LEDs, this input needs to be low.</string>
+    <string name="elem_Seven-Seg_pin_ca">Common anode. To turn on the LEDs, this input needs to be high.</string>
     <string name="elem_Seven-Seg-Hex">Seven-Segment-Hex Display</string>
     <string name="elem_Seven-Seg-Hex_tt">Seven Segment Display with a 4 bit hex input</string>
     <string name="elem_Seven-Seg-Hex_pin_d">The value at this input is visualized at the display.</string>
@@ -1155,8 +1156,13 @@
     <string name="key_relayNormallyClosed_tt">If set the relay is closed if the input is low.</string>
     <string name="key_poles">Pole count</string><!-- Relay -->
     <string name="key_poles_tt">Number of poles available.</string>
-    <string name="key_commonCathode">Common Cathode</string><!-- Seven-Seg -->
-    <string name="key_commonCathode_tt">If selected the common cathode input is also simulated.</string>
+    <string name="key_commonCathode">Common Connection</string><!-- Seven-Seg -->
+    <string name="key_commonCathode_tt">If selected, a common cathode or anode input is also simulated.</string>
+    <string name="key_commonConnectionType">Common</string>
+    <string name="key_commonConnectionType_tt">Kind of common connection.</string>
+    <string name="key_commonConnectionType_cathode">Cathode</string>
+    <string name="key_commonConnectionType_anode">Anode</string>
+
     <string name="key_ledPersistence">Avoid Flicker</string><!-- Seven-Seg, LedMatrix -->
     <string name="key_ledPersistence_tt">It is not possible to increase the frequency so much that the flickering disappears.
         With this option you can stabilize the display by keeping the LEDs on until the common cathode goes down again.
@@ -1200,6 +1206,8 @@
         It must be ensured that the names of all files in this folder and all subfolders are unique.</string>
     <string name="key_grid">Show Grid</string>
     <string name="key_grid_tt">Shows a grid in the main window.</string>
+    <string name="key_wireToolTips">Wire tool tips</string>
+    <string name="key_wireToolTips_tt">If set, lines are highlighted when the mouse hovers over them.</string>
     <string name="key_mapToKey">Map to keyboard</string><!-- Button -->
     <string name="key_mapToKey_tt">Button is mapped to the keyboard.
         To use the cursor keys use UP, DOWN, LEFT or RIGHT as label.</string>
@@ -1370,6 +1378,7 @@
     <string name="lib_ram">RAM</string>
     <string name="lib_eeprom">EEPROM</string>
 
+    <string name="menu_window">Windows</string>
     <string name="menu_about">About</string>
     <string name="menu_analyse">Analysis</string>
     <string name="menu_analyse_tt">Analyses the actual circuit</string>
@@ -1890,6 +1899,8 @@ Therefore, the signal 'D_out' is also available to check the value in this case.
     <string name="key_transRad">Radius</string>
     <string name="key_transRad_tt">Radius of the circle in the diagram.</string>
     <string name="msg_fsmCantCreateTable">Can not create state transition table.</string>
+    <string name="msg_fsmTransition">Transition</string>
+    <string name="msg_fsmState">State</string>
     <string name="msg_fsmNewState">New State</string>
     <string name="msg_fsm_errorLoadingFile">Error loading a file!</string>
     <string name="msg_fsm_errorStoringFile">Error storing a file!</string>

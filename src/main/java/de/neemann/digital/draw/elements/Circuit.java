@@ -499,15 +499,10 @@ public class Circuit implements Copyable<Circuit> {
      * @return the first element or null if there is no element at the given position
      */
     public VisualElement getElementAt(Vector pos) {
-        VisualElement pending = null;
-        for (VisualElement element : visualElements) {
+        for (VisualElement element : visualElements)
             if (element.matches(pos, false))
-                if (element.isDecoratingShape())
-                    pending = element;
-                else
-                    return element;
-        }
-        return pending;
+                return element;
+        return null;
     }
 
     /**
@@ -519,18 +514,10 @@ public class Circuit implements Copyable<Circuit> {
      */
     public List<VisualElement> getElementListAt(Vector pos, boolean includeText) {
         ArrayList<VisualElement> list = new ArrayList<>();
-        ArrayList<VisualElement> grList = new ArrayList<>();
-        for (VisualElement element : visualElements) {
+        for (VisualElement element : visualElements)
             if (element.matches(pos, includeText))
-                if (element.isDecoratingShape())
-                    grList.add(element);
-                else
-                    list.add(element);
-        }
-        if (list.isEmpty())
-            return grList;
-        else
-            return list;
+                list.add(element);
+        return list;
     }
 
 
@@ -588,10 +575,17 @@ public class Circuit implements Copyable<Circuit> {
      * @return the matching wire or null
      */
     public Wire getWireAt(Vector pos, int radius) {
+        float minDist = 0;
+        Wire best = null;
         for (Wire w : wires)
-            if (w.contains(pos, radius))
-                return w;
-        return null;
+            if (w.contains(pos, radius)) {
+                float d = w.distance(pos);
+                if (best == null || d < minDist) {
+                    minDist = d;
+                    best = w;
+                }
+            }
+        return best;
     }
 
     /**

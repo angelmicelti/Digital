@@ -180,7 +180,7 @@
   <string name="elem_Seven-Seg_pin_f">This input controls the upper, left, vertical line.</string>
   <string name="elem_Seven-Seg_pin_g">This input controls the middle, horizontal line.</string>
   <string name="elem_Seven-Seg_pin_dp">This input controls the decimal point.</string>
-  <string name="elem_Seven-Seg_pin_cc">Common Cathode. To turn on the LEDs, this input needs to be low.</string>
+  <string name="elem_Seven-Seg_pin_cc">Common cathode. To turn on the LEDs, this input needs to be low.</string>
   <string name="elem_Seven-Seg-Hex">Seven-Segment-Hex Display</string>
   <string name="elem_Seven-Seg-Hex_tt">Seven Segment Display with a 4 bit hex input</string>
   <string name="elem_Seven-Seg-Hex_pin_d">The value at this input is visualized at the display.</string>
@@ -1027,8 +1027,8 @@
   <string name="key_relayNormallyClosed_tt">If set the relay is closed if the input is low.</string>
   <string name="key_poles">Pole count</string>
   <string name="key_poles_tt">Number of poles available.</string>
-  <string name="key_commonCathode">Common Cathode</string>
-  <string name="key_commonCathode_tt">If selected the common cathode input is also simulated.</string>
+  <string name="key_commonCathode">Common Connection</string>
+  <string name="key_commonCathode_tt">If selected, a common cathode or anode input is also simulated.</string>
   <string name="key_ledPersistence">Avoid Flicker</string>
   <string name="key_ledPersistence_tt">It is not possible to increase the frequency so much that the flickering disappears.
         With this option you can stabilize the display by keeping the LEDs on until the common cathode goes down again.
@@ -1209,6 +1209,7 @@
   <string name="lib_more">more</string>
   <string name="lib_ram">RAM</string>
   <string name="lib_eeprom">EEPROM</string>
+  <string name="menu_window">Windows</string>
   <string name="menu_about">About</string>
   <string name="menu_analyse">Analysis</string>
   <string name="menu_analyse_tt">Analyses the actual circuit</string>
@@ -1797,4 +1798,17 @@ Therefore, the signal 'D_out' is also available to check the value in this case.
   <string name="menu_runToBreakMicro">Run To Break in Single Gate Mode</string>
   <string name="menu_runToBreakMicro_tt">Executes all single gate steps until a rising edge is detected on a break component.
         If there is no break component, the remaining single gate steps are executed.</string>
+  <string name="elem_Seven-Seg_pin_ca">Common anode. To turn on the LEDs, this input needs to be high.</string>
+  <string name="key_commonConnectionType">Common</string>
+  <string name="key_commonConnectionType_tt">Kind of common connection.</string>
+  <string name="key_commonConnectionType_cathode">Cathode</string>
+  <string name="key_commonConnectionType_anode">Anode</string>
+  <string name="key_wireToolTips">Wire tool tips</string>
+  <string name="key_wireToolTips_tt">If set, lines are highlighted when the mouse hovers over them.</string>
+  <string name="menu_table_showAllSolutions">Show results dialog</string>
+  <string name="menu_table_showAllSolutions_tt">Shows the results dialog again if it was closed manually.</string>
+  <string name="msg_codeNotConsistent">Input and output definitions could not be created automatically.
+        Please check the settings!</string>
+  <string name="msg_fsmTransition">Transition</string>
+  <string name="msg_fsmState">State</string>
 </resources>

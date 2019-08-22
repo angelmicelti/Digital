@@ -18,6 +18,8 @@ import de.neemann.digital.draw.elements.*;
 import de.neemann.digital.draw.graphics.Vector;
 import de.neemann.digital.draw.graphics.*;
 import de.neemann.digital.draw.library.*;
+import de.neemann.digital.draw.model.Net;
+import de.neemann.digital.draw.model.NetList;
 import de.neemann.digital.draw.shapes.Drawable;
 import de.neemann.digital.draw.shapes.InputShape;
 import de.neemann.digital.draw.shapes.ShapeFactory;
@@ -125,7 +127,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private SyncAccess modelSync = SyncAccess.NOSYNC;
     private boolean isManualScale;
     private boolean graphicHasChangedFlag = true;
-    private boolean focusWasLost = false;
+    private boolean hadFocusAtClick = true;
     private boolean lockMessageShown = false;
     private boolean antiAlias = true;
 
@@ -134,6 +136,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private Circuit shallowCopy;
     private CircuitScrollPanel circuitScrollPanel;
     private TutorialListener tutorialListener;
+    private boolean toolTipHighlighted = false;
+    private NetList toolTipNetList;
 
 
     /**
@@ -237,13 +241,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             }
         });
 
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent focusEvent) {
-                focusWasLost = true;
-            }
-        });
-
         Cursor normalCursor = new Cursor(Cursor.DEFAULT_CURSOR);
         moveCursor = new Cursor(Cursor.MOVE_CURSOR);
         mouseNormal = new MouseControllerNormal(normalCursor);
@@ -266,6 +263,16 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         addMouseListener(dispatcher);
 
         mouseNormal.activate();
+
+        if (parent != null) {
+            parent.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowDeactivated(WindowEvent e) {
+                    if (!(activeMouseController instanceof MouseControllerWizard || activeMouseController == mouseSelect))
+                        activeMouseController.escapePressed();
+                }
+            });
+        }
 
         setToolTipText("");
     }
@@ -416,7 +423,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      * Opens the attribute editor
      */
     public void editCircuitAttributes() {
-        ElementAttributes modifiedAttributes = new AttributeDialog(parent, ATTR_LIST, getCircuit().getAttributes()).showDialog();
+        ElementAttributes modifiedAttributes =
+                new AttributeDialog(parent, ATTR_LIST, getCircuit().getAttributes())
+                        .setDialogTitle(Lang.get("menu_editAttributes"))
+                        .showDialog();
         if (modifiedAttributes != null)
             modify(new ModifyCircuitAttributes(modifiedAttributes));
     }
@@ -429,6 +439,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     public void modify(Modification<Circuit> modification) {
         try {
             if (modification != null) {
+                toolTipNetList = null;
                 undoManager.apply(modification);
                 if (tutorialListener != null)
                     tutorialListener.modified(modification);
@@ -452,11 +463,15 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      * undo last action
      */
     private void undo() {
-        if (!isLocked() && undoManager.undoAvailable()) {
-            try {
-                undoManager.undo();
-            } catch (ModifyException e) {
-                throw new RuntimeException("internal error in undo", e);
+        if (activeMouseController != mouseNormal)
+            activeMouseController.escapePressed();
+        else {
+            if (!isLocked() && undoManager.undoAvailable()) {
+                try {
+                    undoManager.undo();
+                } catch (ModifyException e) {
+                    throw new RuntimeException("internal error in undo", e);
+                }
             }
         }
     }
@@ -472,11 +487,15 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      * redo last undo
      */
     private void redo() {
-        if (!isLocked() && undoManager.redoAvailable()) {
-            try {
-                undoManager.redo();
-            } catch (ModifyException e) {
-                throw new RuntimeException("internal error in redo", e);
+        if (activeMouseController != mouseNormal)
+            activeMouseController.escapePressed();
+        else {
+            if (!isLocked() && undoManager.redoAvailable()) {
+                try {
+                    undoManager.redo();
+                } catch (ModifyException e) {
+                    throw new RuntimeException("internal error in redo", e);
+                }
             }
         }
     }
@@ -513,6 +532,11 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
     @Override
     public String getToolTipText(MouseEvent event) {
+        if (toolTipHighlighted) {
+            toolTipHighlighted = false;
+            removeHighLighted();
+        }
+
         Vector pos = getPosVector(event);
         VisualElement ve = getCircuit().getElementAt(pos);
         if (ve != null) {
@@ -540,6 +564,23 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             ObservableValue v = w.getValue();
             if (v != null)
                 return v.getValueString();
+            else {
+                if (Settings.getInstance().get(Keys.SETTINGS_WIRETOOLTIP))
+                    if (highLighted == null || highLighted.isEmpty() || toolTipHighlighted) {
+                        try {
+                            if (toolTipNetList == null)
+                                toolTipNetList = new NetList(getCircuit());
+                            Net n = toolTipNetList.getNetOfPos(w.p1);
+                            if (n != null) {
+                                removeHighLighted();
+                                addHighLighted(n.getWires());
+                                toolTipHighlighted = true;
+                            }
+                        } catch (PinException e) {
+                            e.printStackTrace();
+                        }
+                    }
+            }
         }
 
         return null;
@@ -921,6 +962,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         undoAction.setEnabled(false);
         redoAction.setEnabled(false);
 
+        toolTipNetList = null;
+
         if (circuitScrollPanel != null)
             circuitScrollPanel.sizeChanged();
         fitCircuit();
@@ -937,8 +980,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         AffineTransform newTrans = new AffineTransform();
         if (gr.getMin() != null && getWidth() != 0 && getHeight() != 0) {
             Vector delta = gr.getMax().sub(gr.getMin());
-            double sx = ((double) getWidth()) / (delta.x + Style.NORMAL.getThickness() * 4);
-            double sy = ((double) getHeight()) / (delta.y + Style.NORMAL.getThickness() * 6);
+            int pad = circuitScrollPanel.getBarWidth();
+            double sx = ((double) getWidth() - pad) / (delta.x + SIZE * 2);
+            double sy = ((double) getHeight() - pad) / (delta.y + SIZE * 2);
             double s = Math.min(sx, sy);
 
 
@@ -1044,7 +1088,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
                 Point p = new Point(e.getX(), e.getY());
                 SwingUtilities.convertPointToScreen(p, CircuitComponent.this);
-                AttributeDialog attributeDialog = new AttributeDialog(parent, p, list, element.getElementAttributes()).setVisualElement(element);
+                AttributeDialog attributeDialog = new AttributeDialog(parent, p, list, element.getElementAttributes())
+                        .setDialogTitle(elementType.getTranslatedName())
+                        .setVisualElement(element);
                 if (elementType instanceof ElementTypeDescriptionCustom) {
                     attributeDialog.addButton(Lang.get("attr_openCircuitLabel"), new ToolTipAction(Lang.get("attr_openCircuit")) {
                         @Override
@@ -1312,6 +1358,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
         @Override
         public void mousePressed(MouseEvent e) {
+            hadFocusAtClick = hasFocus() || parent.hasMouseFocus();
             pos = new Vector(e.getX(), e.getY());
             isMoved = false;
             requestFocusInWindow();
@@ -1332,6 +1379,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
         @Override
         public void mouseMoved(MouseEvent e) {
+            if (toolTipHighlighted) {
+                removeHighLighted();
+                toolTipHighlighted = false;
+            }
             lastMousePos = new Vector(e.getX(), e.getY());
             activeMouseController.moved(e);
         }
@@ -1448,7 +1499,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 VisualElement vp = getVisualElement(pos, true);
                 if (vp != null)
                     editAttributes(vp, e);
-            } else if (mouse.isPrimaryClick(e)) {
+            } else if (mouse.isPrimaryClick(e) && hadFocusAtClick) {
                 VisualElement vp = getVisualElement(pos, false);
                 if (vp != null) {
                     if (getCircuit().isPinPos(raster(pos), vp) && !mouse.isClickModifier(e)) {
@@ -1460,11 +1511,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                         Wire wire = getCircuit().getWireAt(pos, SIZE2);
                         if (wire != null)
                             mouseMoveWire.activate(wire, pos);
-                    } else if (!focusWasLost)
+                    } else
                         mouseWireRect.activate(pos);
                 }
             }
-            focusWasLost = false;
         }
 
         @Override
@@ -1537,7 +1587,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 insertWires(element);
             }
             mouseNormal.activate();
-            focusWasLost = false;
         }
 
         @Override
@@ -2222,7 +2271,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 modify(builder.build());
             }
             mouseNormal.activate();
-            focusWasLost = false;
         }
 
         @Override
