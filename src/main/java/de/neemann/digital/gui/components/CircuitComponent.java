@@ -1126,12 +1126,40 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                     attributeDialog.disableOk();
 
                 ElementAttributes modified = attributeDialog.showDialog();
-                if (modified != null && !locked)
-                    modify(new ModifyAttributes(element, modified));
+                if (modified != null && !locked) {
+                    Modification<Circuit> mod = new ModifyAttributes(element, modified);
+                    modify(checkNetRename(element, modified, mod));
+                }
             }
         } catch (ElementNotFoundException ex) {
             // do nothing if element not found!
         }
+    }
+
+    private Modification<Circuit> checkNetRename(VisualElement element, ElementAttributes modified, Modification<Circuit> mod) {
+        String oldName = element.getElementAttributes().get(Keys.NETNAME);
+        if (element.equalsDescription(Tunnel.DESCRIPTION) && modified.contains(Keys.NETNAME) && !oldName.isEmpty()) {
+
+            List<VisualElement> others = getCircuit().getElements(el -> el != element
+                    && el.equalsDescription(Tunnel.DESCRIPTION)
+                    && el.getElementAttributes().get(Keys.NETNAME).equals(oldName));
+
+            if (others.size() > 0) {
+                String newName = modified.get(Keys.NETNAME);
+                int res = JOptionPane.showConfirmDialog(this,
+                        new LineBreaker().toHTML().preserveContainedLineBreaks().breakLines(Lang.get("msg_renameNet_N_OLD_NEW", others.size(), oldName, newName)),
+                        Lang.get("msg_renameNet"),
+                        JOptionPane.YES_NO_OPTION);
+                if (res == JOptionPane.YES_OPTION) {
+                    Modifications.Builder<Circuit> b =
+                            new Modifications.Builder<Circuit>(Lang.get("msg_renameNet")).add(mod);
+                    for (VisualElement o : others)
+                        b.add(new ModifyAttribute<>(o, Keys.NETNAME, newName));
+                    return b.build();
+                }
+            }
+        }
+        return mod;
     }
 
     @Override
@@ -1399,6 +1427,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             if (wasMoved(e) || isMoved) {
                 isMoved = true;
                 if (!activeMouseController.dragged(e)) {
+                    // if active mouse controller does not handle the drag, move the circuit instead.
                     Vector newPos = new Vector(e.getX(), e.getY());
                     Vector delta = newPos.sub(pos);
                     double s = transform.getScaleX();
@@ -1451,6 +1480,13 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         void moved(MouseEvent e) {
         }
 
+        /**
+         * Is called if the mouse is dragged.
+         * If this method returns false, the circuit is moved instead.
+         *
+         * @param e the mouse event
+         * @return false is drag is not handled by controller
+         */
         boolean dragged(MouseEvent e) {
             return false;
         }

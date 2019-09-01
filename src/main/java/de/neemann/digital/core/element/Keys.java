@@ -278,7 +278,7 @@ public final class Keys {
      * the data key for memory
      */
     public static final Key<DataField> DATA
-            = new Key<>("Data", DataField.DEFAULT);
+            = new Key<>("Data", DataField::new);
 
     /**
      * flag for flipping selector pos in muxers, decoders and drivers
@@ -383,6 +383,12 @@ public final class Keys {
      */
     public static final Key<Boolean> SHOW_DATA_GRAPH_MICRO
             = new Key<>("showDataGraphMicro", false).setSecondary();
+
+    /**
+     * Used to add the value to the measurement graph
+     */
+    public static final Key<Boolean> ADD_VALUE_TO_GRAPH
+            = new Key<>("addValueToGraph", true).allowGroupEdit().setSecondary();
 
     /**
      * flag to enable the single gate mode in the embedded data view
@@ -596,7 +602,7 @@ public final class Keys {
      * contains the input inverter config
      */
     public static final Key<InverterConfig> INVERTER_CONFIG
-            = new Key<>("inverterConfig", new InverterConfig());
+            = new Key<>("inverterConfig", new InverterConfig.Builder().build());
 
     /**
      * Background Color of nested circuits
@@ -655,7 +661,7 @@ public final class Keys {
      * The manager which contains all the roms data
      */
     public static final Key<ROMManger> ROMMANAGER
-            = new Key<>("romContent", ROMManger.EMPTY).setSecondary();
+            = new Key<>("romContent", ROMManger::new).setSecondary();
 
 
     /**
@@ -701,7 +707,7 @@ public final class Keys {
      * Shape used to represent a visual element
      */
     public static final Key<CustomShapeDescription> CUSTOM_SHAPE
-            = new Key<>("customShape", CustomShapeDescription.EMPTY)
+            = new Key<>("customShape", new CustomShapeDescription.Builder().build())
             .setSecondary()
             .setDependsOn(SHAPE_TYPE, st -> st.equals(CustomCircuitShapeType.CUSTOM));
 
@@ -809,4 +815,9 @@ public final class Keys {
             new Key<>("wireToolTips", false);
 
 
+    /**
+     * The switch acts as input
+     */
+    public static final Key<Boolean> SWITCH_ACTS_AS_INPUT =
+            new Key<>("switchActsAsInput", false).setSecondary();
 }

@@ -16,6 +16,7 @@ import de.neemann.digital.core.io.Out;
 import de.neemann.digital.core.memory.ROM;
 import de.neemann.digital.core.wiring.Driver;
 import de.neemann.digital.draw.elements.Circuit;
+import de.neemann.digital.draw.elements.Tunnel;
 import de.neemann.digital.draw.elements.VisualElement;
 import de.neemann.digital.draw.elements.Wire;
 import de.neemann.digital.draw.graphics.GraphicMinMax;
@@ -62,7 +63,7 @@ import static de.neemann.digital.testing.TestCaseElement.TESTDATA;
  * These tests are excluded from the maven build because gui tests are sometimes fragile.
  * They may not behave as expected on all systems.
  * Run this tests directly from your IDE.
- *
+ * <p>
  * maven: mvn -Dtest=TestInGUI test
  */
 public class TestInGUI extends TestCase {
@@ -164,7 +165,9 @@ public class TestInGUI extends TestCase {
                 .delay(500)
                 .press("F5")
                 .mouseMove(100, 100)
+                .delay(300)
                 .mouseClick(InputEvent.BUTTON1_MASK)
+                .delay(200)
                 .mouseMove(400, 200)
                 .mouseClick(InputEvent.BUTTON1_MASK)
                 .delay(500)
@@ -240,14 +243,14 @@ public class TestInGUI extends TestCase {
                 .add(new EnterTruthTable(0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1))
                 .press("F1")
                 .delay(500)
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 146, 110, new Color(215,175,175)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 109, new Color(187,187,221)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 86, 169, new Color(255,187,187)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 205, 169, new Color(127,255,127)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 145, 228, new Color(127,127,255)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 230, new Color(255,175,255)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 86, 288, new Color(242,242,191)))
-                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 205, 289, new Color(127,255,255)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 146, 110, new Color(215, 175, 175)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 109, new Color(187, 187, 221)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 86, 169, new Color(255, 187, 187)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 205, 169, new Color(127, 255, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 145, 228, new Color(127, 127, 255)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 230, new Color(255, 175, 255)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 86, 288, new Color(242, 242, 191)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 205, 289, new Color(127, 255, 255)))
 //                .add(new GuiTester.ColorPickerCreator(KarnaughMapComponent.class))
 //                .ask("Shows the k-map a checkerboard pattern?")
                 .add(new GuiTester.CloseTopMost())
@@ -430,7 +433,11 @@ public class TestInGUI extends TestCase {
                 .press("control typed a")
                 .typeTempFile("test")
                 .press("ENTER")
-                .delay(3000)
+                .delay(300)
+                .add(new GuiTester.WaitFor(() -> {
+                    Window activeWindow = FocusManager.getCurrentManager().getActiveWindow();
+                    return !(activeWindow instanceof Main || activeWindow instanceof TableDialog);
+                }))
                 .add(new GuiTester.CheckTextInWindow<>(JDialog.class, "Design fits successfully"))
                 .add(new GuiTester.CloseTopMost())
                 .add(new GuiTester.CloseTopMost())
@@ -954,6 +961,32 @@ public class TestInGUI extends TestCase {
                 .execute();
     }
 
+    public void testNetRename() {
+        new GuiTester("dig/net/netRename.dig")
+                .add(new SetMouseToElement(v -> v.equalsDescription(Tunnel.DESCRIPTION) && v.getPos().x < 400))
+                .mouseClick(InputEvent.BUTTON3_MASK)
+                .delay(200)
+                .type("et")
+                .press("ENTER")
+                .delay(200)
+                .add(new GuiTester.CheckTextInWindow<>(JDialog.class, "'net'"))
+                .add(new GuiTester.CheckTextInWindow<>(JDialog.class, " 2 "))
+                .delay(200)
+                .press("ENTER")
+                .delay(200)
+                .add(new GuiTester.WindowCheck<Main>(Main.class){
+                    @Override
+                    public void checkWindow(GuiTester guiTester, Main main) {
+                        List<VisualElement> e = main.getCircuitComponent().getCircuit()
+                                .getElements(v -> v.equalsDescription(Tunnel.DESCRIPTION));
+                        assertEquals(3, e.size());
+                        for (VisualElement v : e)
+                            assertEquals("net", v.getElementAttributes().get(Keys.NETNAME));
+                    }
+                })
+                .execute();
+    }
+
     public void testFSM() {
         new GuiTester()
                 .press("F10")
@@ -1163,7 +1196,7 @@ public class TestInGUI extends TestCase {
             List<VisualElement> el = main
                     .getCircuitComponent()
                     .getCircuit()
-                    .findElements(v -> v.equalsDescription(description));
+                    .getElements(v -> v.equalsDescription(description));
 
             assertEquals("not exact one " + description.getName() + " found in circuit", 1, el.size());
 
@@ -1192,7 +1225,7 @@ public class TestInGUI extends TestCase {
             List<VisualElement> el = main
                     .getCircuitComponent()
                     .getCircuit()
-                    .findElements(filter);
+                    .getElements(filter);
 
             assertEquals("not exact one element found in circuit", 1, el.size());
 

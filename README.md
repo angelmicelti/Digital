@@ -73,13 +73,13 @@ The latest changes that have not yet been released are listed in the
 
 ## Documentation ##
 
-The [documentation](https://github.com/hneemann/Digital/releases/latest) is available in English, German and Portuguese.
+The [documentation](https://github.com/hneemann/Digital/releases/latest) is available in English, German, Spanish and Portuguese.
 It is still very incomplete but it contains a chapter "First Steps" which explains the basic usage of Digital.
 The documentation also contains a list of available 74xx chips and a list of available keyboard shortcuts. 
 
 ## Translations ##
 
-So far Digital is available in English, German and Portuguese. If someone wants to add a 
+So far Digital is available in English, German, Spanish and Portuguese. If someone wants to add a 
 new translation, please let me [know](mailto:digital-simulator@web.de).
 I can provide you with a special file for translation. This file is much easier to 
 translate than the [files](https://github.com/hneemann/Digital/blob/master/src/main/resources/lang) 

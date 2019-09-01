@@ -37,6 +37,9 @@ public class InputShape implements Shape {
     private final IntFormat format;
     private final boolean isHighZ;
     private final boolean avoidLow;
+    private final long min;
+    private final long max;
+    private final int bits;
     private IOState ioState;
     private SingleValueDialog dialog;
     private Value value;
@@ -62,6 +65,15 @@ public class InputShape implements Shape {
         isHighZ = attr.get(Keys.INPUT_DEFAULT).isHighZ() || attr.get(Keys.IS_HIGH_Z);
 
         avoidLow = isHighZ && attr.get(Keys.AVOID_ACTIVE_LOW);
+
+        bits = attr.getBits();
+        if (format.isSigned()) {
+            max = Bits.mask(bits) >> 1;
+            min = -max - 1;
+        } else {
+            min = 0;
+            max = Bits.mask(bits);
+        }
     }
 
     @Override
@@ -97,7 +109,7 @@ public class InputShape implements Shape {
 
     @Override
     public void drawTo(Graphic graphic, Style heighLight) {
-        if (graphic.isFlagSet(Graphic.LATEX)) {
+        if (graphic.isFlagSet(Graphic.Flag.smallIO)) {
             Vector center = new Vector(-LATEX_RAD.x, 0);
             graphic.drawCircle(center.sub(LATEX_RAD), center.add(LATEX_RAD), Style.NORMAL);
             Vector textPos = new Vector(-SIZE2 - LATEX_RAD.x, 0);
@@ -130,11 +142,12 @@ public class InputShape implements Shape {
         private boolean isDrag;
         private Point startPos;
         private long startValue;
+        private long lastValueSet;
 
         @Override
         public boolean clicked(CircuitComponent cc, Point pos, IOState ioState, Element element, SyncAccess modelSync) {
             ObservableValue value = ioState.getOutput(0);
-            if (value.getBits() == 1) {
+            if (bits == 1) {
                 modelSync.access(() -> {
                     if (isHighZ) {
                         if (value.isHighZ()) {
@@ -169,19 +182,21 @@ public class InputShape implements Shape {
         @Override
         public boolean dragged(CircuitComponent cc, Point posOnScreen, Vector pos, Transform transform, IOState ioState, Element element, SyncAccess modelSync) {
             ObservableValue value = ioState.getOutput(0);
-            int bits = value.getBits();
             if (bits > 1 && !value.isHighZ()) {
                 if (!isDrag) {
                     isDrag = true;
                     startPos = posOnScreen;
                     startValue = value.getValue();
+                    lastValueSet = startValue;
                 } else {
-                    long max = Bits.mask(bits);
                     int delta = startPos.y - posOnScreen.y;
                     long v = startValue + (delta * max) / SLIDER_HEIGHT;
-                    long val = Math.max(0, Math.min(v, max));
-                    modelSync.access(() -> value.setValue(val));
-                    return true;
+                    long val = Math.max(min, Math.min(v, max));
+                    if (val != lastValueSet) {
+                        modelSync.access(() -> value.setValue(val));
+                        lastValueSet = val;
+                        return true;
+                    }
                 }
             }
             return false;
