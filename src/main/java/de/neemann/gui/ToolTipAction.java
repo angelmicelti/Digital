@@ -5,8 +5,12 @@
  */
 package de.neemann.gui;
 
+import de.neemann.digital.core.element.Keys;
+import de.neemann.digital.gui.Settings;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /**
@@ -84,10 +88,28 @@ public abstract class ToolTipAction extends AbstractAction {
      * @return this for call chaining
      */
     public ToolTipAction setAcceleratorCTRLplus(char key) {
-        int mask = KeyEvent.CTRL_DOWN_MASK;
+        return setAccelerator(KeyStroke.getKeyStroke(key, getCTRLMask()));
+    }
+
+    /**
+     * Sets an accelerator to the action
+     *
+     * @param key the accelerator key
+     * @return this for call chaining
+     */
+    public ToolTipAction setAcceleratorCTRLplus(String key) {
+        int keyCode = KeyStroke.getKeyStroke(key).getKeyCode();
+        return setAccelerator(KeyStroke.getKeyStroke(keyCode, getCTRLMask()));
+    }
+
+    /**
+     * @return the system specific CTRL mask.
+     */
+    public static int getCTRLMask() {
+        int mask = InputEvent.CTRL_DOWN_MASK;
         if (Screen.isMac())
-            mask= KeyEvent.META_DOWN_MASK;
-        return setAccelerator(KeyStroke.getKeyStroke(key, mask));
+            mask = InputEvent.META_DOWN_MASK;
+        return mask;
     }
 
     /**
@@ -107,6 +129,8 @@ public abstract class ToolTipAction extends AbstractAction {
      * @return this for call chaining
      */
     public ToolTipAction setAccelerator(KeyStroke accelerator) {
+        if (accelerator.getKeyCode() == KeyEvent.VK_PLUS && Settings.getInstance().get(Keys.SETTINGS_USE_EQUALS_KEY))
+            accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, accelerator.getModifiers());
         this.accelerator = accelerator;
         return this;
     }
@@ -169,6 +193,7 @@ public abstract class ToolTipAction extends AbstractAction {
             ToolTipManager.sharedInstance().registerComponent(b);
         }
         b.setText(null);
+        b.setFocusable(false);
         return b;
     }
 

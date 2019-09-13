@@ -178,7 +178,7 @@
     <string name="elem_Button">Button</string>
     <string name="elem_Button_tt">A simple push button which goes back to its original state when it is released.</string>
     <string name="elem_Button_pin_out">The output signal of the button.</string>
-    <string name="elem_ButtonLED">Button</string>
+    <string name="elem_ButtonLED">Button with LED</string>
     <string name="elem_ButtonLED_tt">A simple push button which goes back to its original state when it is released.
         The push button has an LED which can be switched via an input signal.</string>
     <string name="elem_ButtonLED_pin_out">The output signal of the button.</string>
@@ -1377,6 +1377,11 @@
     <string name="key_SVG_monochrome_tt">Only gray colors are used.</string>
     <string name="key_SVG_thinnerLines">Thin Lines</string>
     <string name="key_SVG_thinnerLines_tt">If set, the lines are drawn slightly thinner.</string>
+
+    <string name="key_equalsInsteadOfPlus">Use Equals-Key</string>
+    <string name="key_equalsInsteadOfPlus_tt">Use the equal key instead of the plus key.
+        This is always useful if the plus character is not a primary key, but the second assignment of the
+        equals character, e.g. for an American or French keyboard layout.</string>
 
     <string name="mod_insertWire">Inserted wire.</string>
     <string name="mod_insertCopied">Insert from clipboard.</string>
