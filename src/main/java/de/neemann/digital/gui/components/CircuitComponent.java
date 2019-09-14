@@ -258,6 +258,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         addMouseMotionListener(dispatcher);
         addMouseListener(dispatcher);
 
+        enableFavoritePositions();
+
         mouseNormal.activate();
 
         if (parent != null) {
@@ -271,6 +273,34 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         setToolTipText("");
+    }
+
+    private void enableFavoritePositions() {
+        for (int j = 0; j <= 9; j++) {
+            final int i = j;
+            final Key<AffineTransform> key = new Key<>("view" + i, AffineTransform::new);
+            new ToolTipAction("CTRL+" + i) {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    ElementAttributes attr = new ElementAttributes(getCircuit().getAttributes());
+                    attr.set(key, transform);
+                    modify(new ModifyCircuitAttributes(attr));
+                }
+            }.setAcceleratorCTRLplus((char) ('0' + i)).enableAcceleratorIn(this);
+            new ToolTipAction("" + i) {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    AffineTransform tr = getCircuit().getAttributes().get(key);
+                    if (!tr.isIdentity()) {
+                        transform = tr;
+                        isManualScale = true;
+                        graphicHasChanged();
+                        if (circuitScrollPanel != null)
+                            circuitScrollPanel.transformChanged(transform);
+                    }
+                }
+            }.setAccelerator(KeyStroke.getKeyStroke((char) ('0' + i), 0)).enableAcceleratorIn(this);
+        }
     }
 
     private void createAdditionalShortcuts(ShapeFactory shapeFactory) {
