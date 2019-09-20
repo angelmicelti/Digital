@@ -479,10 +479,6 @@ public final class EditorFactory {
             bool.setEnabled(enabled);
         }
 
-        JCheckBox getCheckBox() {
-            return bool;
-        }
-
         @Override
         public void setValue(Boolean value) {
             bool.setEnabled(value);
@@ -594,6 +590,7 @@ public final class EditorFactory {
     private final static class DataFieldEditor extends LabelEditor<DataField> {
 
         private DataField data;
+        private boolean majorModification = false;
 
         public DataFieldEditor(DataField data, Key<DataField> key) {
             this.data = data;
@@ -612,7 +609,10 @@ public final class EditorFactory {
                         DataEditor de = new DataEditor(panel, data, dataBits, addrBits, false, SyncAccess.NOSYNC);
                         de.setFileName(attr.getFile(ROM.LAST_DATA_FILE_KEY));
                         if (de.showDialog()) {
-                            data = de.getModifiedDataField();
+                            DataField mod = de.getModifiedDataField();
+                            if (!data.equals(mod))
+                                majorModification = true;
+                            data = mod;
                             attr.setFile(ROM.LAST_DATA_FILE_KEY, de.getFileName());
                         }
                     } catch (EditorParseException e1) {
@@ -677,6 +677,11 @@ public final class EditorFactory {
         public DataField getValue() {
             data.trim();
             return data;
+        }
+
+        @Override
+        public boolean invisibleModification() {
+            return majorModification;
         }
 
         @Override

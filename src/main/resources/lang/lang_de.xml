@@ -264,6 +264,16 @@
     <string name="elem_Terminal_pin_D">Über diesen Eingang werden die anzuzeigenden Daten an das Terminal weitergegeben.</string>
     <string name="elem_Terminal_pin_en">Ein High an diesem Eingang aktiviert den Takteingang.</string>
 
+    <string name="elem_VGA">VGA Bildschirm</string>
+    <string name="elem_VGA_tt">Analysiert die eingehenden Video-Signale und zeigt die entsprechende Grafik an.
+        Da die Simulation nicht in Echtzeit laufen kann, wird zusätzlich zu den Videosignalen der Pixeltakt benötigt.</string>
+    <string name="elem_VGA_pin_R">Der rote Farbanteil</string>
+    <string name="elem_VGA_pin_G">Der grüne Farbanteil</string>
+    <string name="elem_VGA_pin_B">Der blaue Farbanteil</string>
+    <string name="elem_VGA_pin_H">Das horizontale Synchronisationssignal</string>
+    <string name="elem_VGA_pin_V">Das vertikale Synchronisationssignal</string>
+    <string name="elem_VGA_pin_C">Der Pixeltakt</string>
+
     <string name="elem_MIDI">MIDI</string>
     <string name="elem_MIDI_tt">Nutzt das MIDI-System, um Noten abzuspielen.</string>
     <string name="elem_MIDI_pin_N">Note</string>
@@ -288,7 +298,7 @@
     <string name="elem_Tunnel">Tunnel</string>
     <string name="elem_Tunnel_tt">Verbindet Elemente, ohne eine Leitung zu ziehen. Alle Tunnelelemente, welche denselben
         Netznamen tragen, sind miteinander verbunden. Der Tunnel ist immer lokal, es können keine Verbindungen über
-        Schaltungsgrenzen hinaus erzeugt werden.</string>
+        Schaltungsgrenzen hinaus erzeugt werden. Unbenannte Tunnel haben keine Funktion.</string>
     <string name="elem_Tunnel_pin_in">Anschluss des Tunnels.</string>
     <string name="elem_Splitter">Splitter</string>
     <string name="elem_Splitter_tt">Führt mehrere Leitungen zu einem gemeinsamen Bus zusammen, bzw. splittet diesen wieder auf.
@@ -1038,6 +1048,8 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     </string>
     <string name="msg_errParsingGenerics">Fehler bei der Analyse des generischen Codes.</string>
 
+    <string name="err_vgaModeNotDetected_N">Videomodus wurde nicht erkannt ({0})</string>
+
     <string name="key_AddrBits">Adress-Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Anzahl der Adress-Bits, die verwendet werden.</string>
     <string name="key_Bits">Daten-Bits</string><!-- And, NAnd, Or, NOr, XOr, XNOr, Not, LookUpTable, Delay, Out, In, Ground, VDD, Const, PullUp, PullDown, Driver, DriverInvSel, Multiplexer, Demultiplexer, D_FF, D_FF_AS, Register, ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM, GraphicCard, Counter, Add, Sub, Mul, BarrelShifter, Comparator, Neg, BitCount, Switch, Relay, PFET, NFET, FGPFET, FGNFET, TransGate -->
@@ -1762,6 +1774,8 @@ Stellen Sie sicher, dass der Flash-Vorgang abgeschlossen ist, bevor Sie diesen D
     <string name="msg_renameNet">Netz umbenennen</string>
     <string name="msg_renameNet_N_OLD_NEW">Es gibt noch {0} weitere Tunnel mit dem Netznamen ''{1}''.
         Sollen alle {0} zu ''{2}'' umbenannt werden?</string>
+
+    <string name="msg_dataWillBeLost_n">Sollen die Änderungen im Feld "{0}" wirklich verworfen werden?</string>
 
     <string name="ok">Ok</string>
     <string name="rot_0">0°</string>
