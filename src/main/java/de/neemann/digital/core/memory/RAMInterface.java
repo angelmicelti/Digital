@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.core.memory;
 
+import de.neemann.digital.core.IntFormat;
 import de.neemann.digital.core.stats.Countable;
 
 /**
@@ -25,4 +26,11 @@ public interface RAMInterface extends ProgramMemory, Countable {
      * @return the addr bits
      */
     int getAddrBits();
+
+    /**
+     * @return the integer format to be used to visualize the values
+     */
+    default IntFormat getIntFormat() {
+        return IntFormat.hex;
+    }
 }
