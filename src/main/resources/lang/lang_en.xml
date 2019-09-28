@@ -1523,20 +1523,22 @@
     <string name="menu_table_create_hardware">Device</string>
     <string name="menu_table_create_jedec_tt">Creates a JEDEC file for the device</string>
     <string name="menu_table_exportTableLaTeX">Export LaTeX</string>
+    <string name="menu_table_createFunctionFixture">Export Test Case</string>
+    <string name="menu_table_createFunctionFixture_tt">Creates a test case description that can be used in a test
+        case.
+    </string>
     <string name="menu_table_exportHex">Export HEX</string>
     <string name="menu_table_exportHex_tt">You can load the HEX file to a ROM or a LUT.</string>
     <string name="menu_table_new">New</string>
     <string name="menu_table_new_combinatorial">Combinatorial</string>
     <string name="menu_table_new_sequential">Sequential</string>
     <string name="menu_table_new_sequential_bidir">Sequential bidirectional</string>
-    <string name="menu_table_columns">Columns</string>
     <string name="menu_table_reorder_inputs">Reorder/Delete Input Variables</string>
     <string name="menu_table_columnsAddVariable">Add Input Variable</string>
     <string name="menu_table_columnsAddVariable_tt">Adds a new input variable to the table.</string>
     <string name="menu_table_reorder_outputs">Reorder/Delete Output Columns</string>
     <string name="menu_table_columnsAdd">Add Output Column</string>
     <string name="menu_table_columnsAdd_tt">Adds a new result column to the table.</string>
-    <string name="menu_table_set">Set</string>
     <string name="menu_table_setXTo0">Set X to 0</string>
     <string name="menu_table_setXTo0_tt">Sets the Don't Cares to 0.</string>
     <string name="menu_table_setXTo1">Set X to 1</string>
@@ -1548,6 +1550,8 @@
     <string name="menu_table_setAllTo0_tt">Set all values to zero.</string>
     <string name="menu_table_setAllTo1">Set all to 1</string>
     <string name="menu_table_setAllTo1_tt">Set all values to one.</string>
+    <string name="menu_table_invert">Invert all bits</string>
+    <string name="menu_table_invert_tt">A "1" becomes a "0" and vice versa. Don't cares remain unchanged.</string>
     <string name="menu_table_showAllSolutions">Show results dialog</string>
     <string name="menu_table_showAllSolutions_tt">Shows the results dialog again if it was closed manually.</string>
     <string name="menu_terminalDelete">Delete</string>
@@ -1782,6 +1786,7 @@ Make sure the flash process is complete before closing this dialog!</string>
     <string name="win_karnaughMap">Karnaugh Map</string>
 
     <string name="btn_help">Help</string>
+    <string name="btn_copyToClipboard">Clipboard</string>
 
     <string name="win_romDialogHelpTitle">Central ROM Content</string>
     <string name="msg_romDialogHelp"><![CDATA[
