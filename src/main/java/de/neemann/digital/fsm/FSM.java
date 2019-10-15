@@ -7,7 +7,7 @@ package de.neemann.digital.fsm;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
+import de.neemann.digital.XStreamValid;
 import de.neemann.digital.analyse.TruthTable;
 import de.neemann.digital.analyse.expression.ExpressionException;
 import de.neemann.digital.draw.graphics.Graphic;
@@ -57,7 +57,7 @@ public class FSM {
      * @return the XStream instance
      */
     public static XStream getxStream() {
-        XStream xStream = new XStream(new StaxDriver());
+        XStream xStream = new XStreamValid();
         xStream.alias("fsm", FSM.class);
         xStream.alias("state", State.class);
         xStream.alias("transition", Transition.class);
@@ -185,6 +185,7 @@ public class FSM {
             state.setInitial(true);
         state.setFSM(this);
         states.add(state);
+        wasModified(state, Movable.Property.ADDED);
         return this;
     }
 
@@ -197,6 +198,7 @@ public class FSM {
     public FSM add(Transition transition) {
         transitions.add(transition);
         transition.setFSM(this);
+        wasModified(transition, Movable.Property.ADDED);
         return this;
     }
 
