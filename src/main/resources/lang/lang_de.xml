@@ -1410,6 +1410,9 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
         Dies ist immer dann sinvoll, wenn das Plus-Zeichen keine Primärtaste ist, sondern die Zweitbelegung des
         Gleich-Zeichens, also z.B. bei amerikanischem oder französischem Tastaturlayout.</string>
 
+    <string name="key_snapToGrid">An Gitter ausrichten</string>
+    <string name="key_snapToGrid_tt">Wenn gesetzt, wird das Element am Gitter ausgerichtet.</string>
+
     <string name="mod_insertWire">Leitung eingefügt.</string>
     <string name="mod_insertCopied">Aus Zwischenablage eingefügt.</string>
     <string name="mod_setKey_N0_in_element_N1">Wert ''{0}'' in Element ''{1}'' verändert.</string>
@@ -1644,6 +1647,8 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="menu_labelPins">Ein- und Ausgänge benennen</string>
     <string name="menu_labelPins_tt">Für alle unbenannten Ein- und Ausgänge eine Bezeichnung setzen.</string>
 
+    <string name="menu_tutorial">Tutorial starten</string>
+    <string name="menu_tutorial_tt">Startet das Anfänger-Tutorial.</string>
 
     <string name="menu_stats">Schaltungsstatistik</string>
     <string name="menu_stats_tt">Zeigt eine Liste der verwendeten Komponenten</string>
