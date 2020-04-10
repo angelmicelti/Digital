@@ -19,8 +19,8 @@
     <string name="attr_dialogHighz">HighZ</string>
     <string name="attr_dialogOctal">Octal</string>
     <string name="attr_dialogBinary">Binary</string>
-    <string name="attr_primary">Basic</string>
-    <string name="attr_secondary">Advanced</string>
+    <string name="attr_panel_primary">Basic</string>
+    <string name="attr_panel_secondary">Advanced</string>
     <string name="btn_discard">Discard Changes</string>
     <string name="btn_edit">Edit</string>
     <string name="btn_editFurther">Continue editing</string>
@@ -290,10 +290,37 @@
     <string name="elem_MIDI_pin_N">Note</string>
     <string name="elem_MIDI_pin_V">Volume</string>
     <string name="elem_MIDI_pin_OnOff">If set, this translates to pressing a keyboard key (key down event),
-        if not set, this translates to releasing the key (key up event).</string>
+        if not set, this translates to releasing the key (key up event).
+    </string>
     <string name="elem_MIDI_pin_en">Enables the component</string>
     <string name="elem_MIDI_pin_PC">If high, the value at N is used to change the program (instrument).</string>
     <string name="elem_MIDI_pin_C">Clock</string>
+
+    <string name="elem_StepperMotorUnipolar">Stepper Motor, unipolar</string>
+    <string name="elem_StepperMotorUnipolar_tt">Unipolar stepper motor with two limit position switches.
+        Full step drive, half step drive and wave drive are supported.
+    </string>
+    <string name="elem_StepperMotorUnipolar_pin_S0">Limit position switch 0, becomes 1 when the motor angle is 0°.
+    </string>
+    <string name="elem_StepperMotorUnipolar_pin_S1">Limit position switch 1, becomes 1 when the motor angle is 180°.
+    </string>
+    <string name="elem_StepperMotorUnipolar_pin_P0">Phase 0</string>
+    <string name="elem_StepperMotorUnipolar_pin_P1">Phase 1</string>
+    <string name="elem_StepperMotorUnipolar_pin_P2">Phase 2</string>
+    <string name="elem_StepperMotorUnipolar_pin_P3">Phase 3</string>
+
+    <string name="elem_StepperMotorBipolar">Stepper Motor, bipolar</string>
+    <string name="elem_StepperMotorBipolar_tt">Bipolar stepper motor with two limit position switches.
+        Full step drive, half step drive and wave drive are supported.
+    </string>
+    <string name="elem_StepperMotorBipolar_pin_S0">Limit position switch 0, becomes 1 when the motor angle is 0°.
+    </string>
+    <string name="elem_StepperMotorBipolar_pin_S1">Limit position switch 1, becomes 1 when the motor angle is 180°.
+    </string>
+    <string name="elem_StepperMotorBipolar_pin_A+">Coil A, positive</string>
+    <string name="elem_StepperMotorBipolar_pin_A-">Coil A, negative</string>
+    <string name="elem_StepperMotorBipolar_pin_B+">Coil B, positive</string>
+    <string name="elem_StepperMotorBipolar_pin_B-">Coil B, negative</string>
 
     <!-- Wires -->
 
@@ -1289,15 +1316,23 @@
     <string name="key_externalOutputs">Outputs</string>
     <string name="key_externalOutputs_tt">The outputs of the external process.
         It is a comma-separated list of signal names. For each signal name, with a colon separated, a number of bits
-        can be specified. The outputs of an 8-bit adder could thus be described as "s:8,c_out".</string>
+        can be specified. The outputs of an 8-bit adder could thus be described as "s:8,c_out".
+    </string>
     <string name="key_Code">Programcode</string>
     <string name="key_Code_tt">The programm code to be executed by the external application.</string>
+    <string name="attr_panel_Options">Options</string>
     <string name="key_ghdlPath">GHDL</string>
     <string name="key_ghdlPath_tt">Path to the executable ghdl file. Only necessary if you want to use ghdl to simulate
-        components defined with vhdl.</string>
+        components defined with vhdl.
+    </string>
+    <string name="key_ghdlOptions">GHDL Options</string>
+    <string name="key_ghdlOptions_tt">Options that are used for all processing steps by GHDL.</string>
+
     <string name="key_iverilogPath">IVerilog</string>
-    <string name="key_iverilogPath_tt">Path to the Icarus verilog installation folder. Only necessary if you want to use iverilog to simulate
-        components defined with verilog.</string>
+    <string name="key_iverilogPath_tt">Path to the Icarus verilog installation folder. Only necessary if you want to use
+        iverilog to simulate
+        components defined with verilog.
+    </string>
     <string name="key_maxValue">Maximum Value</string>
     <string name="key_maxValue_tt">If a zero is entered, the maximum possible value is used (all bits are one).</string>
 
@@ -1420,10 +1455,15 @@
     <string name="key_equalsInsteadOfPlus">Use Equals-Key</string>
     <string name="key_equalsInsteadOfPlus_tt">Use the equal key instead of the plus key.
         This is always useful if the plus character is not a primary key, but the second assignment of the
-        equals character, e.g. for an American or French keyboard layout.</string>
+        equals character, e.g. for an American or French keyboard layout.
+    </string>
 
     <string name="key_snapToGrid">Snap To Grid</string>
     <string name="key_snapToGrid_tt">If set, the component is aligned with the grid.</string>
+
+    <string name="key_layoutShapeDelta">Pin Separator</string>
+    <string name="key_layoutShapeDelta_tt">Used by the layout shape type. Sets the distance to the previous pin.
+    </string>
 
     <string name="mod_insertWire">Inserted wire.</string>
     <string name="mod_insertCopied">Insert from clipboard.</string>
@@ -1454,6 +1494,9 @@
     <string name="lib_switching">Switches</string>
     <string name="lib_misc">Misc.</string>
     <string name="lib_more">more</string>
+    <string name="lib_displays">Displays</string>
+    <string name="lib_mechanic">Mechanical</string>
+    <string name="lib_peripherals">Peripherals</string>
     <string name="lib_ram">RAM</string>
     <string name="lib_eeprom">EEPROM</string>
 
@@ -1668,14 +1711,16 @@
 
 
     <string name="message">&lt;h1&gt;Digital&lt;/h1&gt;A simple simulator for digital circuits.
-        Written by H. Neemann in 2016-2019.
+        Written by H. Neemann in 2016-2020.
 
         The icons are taken from the &lt;a href=&quot;http://tango.freedesktop.org&quot;&gt;Tango Desktop Project&lt;/a&gt;.
 
         Visit the project at &lt;a href=&quot;https://github.com/hneemann/[[name]]&quot;&gt;GitHub&lt;/a&gt;.
-        At Github you can also &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;download&lt;/a&gt; the latest release.
+        At Github you can also &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;download&lt;/a&gt;
+        the latest release.
 
-        There you also can file an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;issue&lt;/a&gt; or suggest
+        There you also can file an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;issue&lt;/a&gt;
+        or suggest
         an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?labels=enhancement&quot;&gt;enhancement&lt;/a&gt;.
     </string>
     <string name="msg_N_nodes">{0} nodes</string>

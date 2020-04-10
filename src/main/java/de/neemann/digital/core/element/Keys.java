@@ -306,6 +306,13 @@ public final class Keys {
             = new Key.KeyEnum<>("shapeType", CustomCircuitShapeType.DEFAULT, CustomCircuitShapeType.values()).setSecondary();
 
     /**
+     * Defines the distance to the previous pin. Used by the layout shape type
+     */
+    public static final Key.KeyInteger LAYOUT_SHAPE_DELTA
+            = new Key.KeyInteger("layoutShapeDelta", 0)
+            .setMin(0);
+
+    /**
      * the width of an element if it is included as nested element
      */
     public static final Key<Integer> HEIGHT
@@ -434,7 +441,7 @@ public final class Keys {
      * shape setting
      */
     public static final Key<Boolean> SETTINGS_IEEE_SHAPES
-            = new Key<>("IEEEShapes", Locale.getDefault().getLanguage().equals(Locale.US.getLanguage())).setRequiresRestart();
+            = new Key<>("IEEEShapes", !Locale.getDefault().getLanguage().equals(Locale.GERMAN.getLanguage())).setRequiresRestart();
 
     /**
      * The GUI Language
@@ -707,6 +714,12 @@ public final class Keys {
      */
     public static final Key<File> SETTINGS_GHDL_PATH
             = new Key.KeyFile("ghdlPath", new File("ghdl")).setSecondary();
+
+    /**
+     * The ghdl options
+     */
+    public static final Key<String> GHDL_OPTIONS
+            = new Key.LongString("ghdlOptions", "--std=08 --ieee=synopsys").setRows(3).setColumns(30).setPanelId("Options");
 
     /**
      * Path to iverilog installation directory
