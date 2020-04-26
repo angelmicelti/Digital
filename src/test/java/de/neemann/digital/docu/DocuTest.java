@@ -59,6 +59,8 @@ public class DocuTest extends TestCase {
                 .append(Lang.get("tableOfContent"))
                 .append("\" lang=\"")
                 .append(language)
+                .append("\" fontFamily=\"")
+                .append(language.equals("zh") ? "SansSerif,SimSun" : "SansSerif")
                 .append("\" rev=\"")
                 .append(System.getProperty("buildnumber"))
                 .append("\" revt=\"")
@@ -325,7 +327,7 @@ public class DocuTest extends TestCase {
             File pdf = new File(target, basename + ".pdf");
             startFOP(fopFactory, xslFO, pdf);
 
-            copy(pdf, new File(target2, "Doc_" + l + ".pdf"));
+            copy(pdf, new File(target2, "Doc_" + l.getFileName() + ".pdf"));
         }
     }
 
