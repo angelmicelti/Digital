@@ -466,7 +466,7 @@ public final class Keys {
      * enables the grid
      */
     public static final Key<Boolean> SETTINGS_GRID
-            = new Key<>("grid", true);
+            = new Key<>("grid", true).setRequiresRepaint();
 
     /**
      * enables the wire bits view
@@ -478,13 +478,13 @@ public final class Keys {
      * enables the MAC mouse mode
      */
     public static final Key<Boolean> SETTINGS_MAC_MOUSE
-            = new Key<>("macMouse", Screen.isMac()).setRequiresRestart();
+            = new Key<>("macMouse", Screen.isMac()).setRequiresRestart().setSecondary();
 
     /**
      * enables tunnel rename dialog
      */
     public static final Key<Boolean> SETTINGS_SHOW_TUNNEL_RENAME_DIALOG
-            = new Key<>("tunnelRenameDialog", true);
+            = new Key<>("tunnelRenameDialog", true).setSecondary();
 
     /**
      * output format for numbers

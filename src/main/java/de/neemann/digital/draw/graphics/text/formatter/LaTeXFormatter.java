@@ -109,6 +109,20 @@ public final class LaTeXFormatter {
                     return "\\textgreater{}";
             case '&':
                 return "\\&";
+            case '_':
+                return "\\_";
+            case '\\':
+                return "\\\\";
+            case '∑':
+                if (inMath)
+                    return "\\sum ";
+                else
+                    return "$\\sum$";
+            case '∏':
+                if (inMath)
+                    return "\\prod ";
+                else
+                    return "$\\prod$";
             default:
                 return "" + aChar;
         }

@@ -301,7 +301,7 @@ public class FSM {
      * @param dt     the time step
      * @param except element which is fixed
      */
-    public void move(int dt, Movable except) {
+    public void move(int dt, MouseMovable except) {
         if (state != MovingState.STOP) {
             calculateForces();
             if (state == MovingState.BOTH)
@@ -377,8 +377,12 @@ public class FSM {
      * @param pos the position
      * @return the element or null
      */
-    public Movable getMovable(Vector pos) {
-        Movable found = null;
+    public MouseMovable getMovable(Vector pos) {
+        for (State s : states)
+            if (s.matchesInitial(pos))
+                return s.getInitialMarkerMovable();
+
+        MouseMovable found = null;
         float dist = Float.MAX_VALUE;
         for (Transition t : transitions)
             if (t.matches(pos)) {
@@ -401,7 +405,6 @@ public class FSM {
                     found = s;
                 }
             }
-
         return found;
     }
 
@@ -439,7 +442,7 @@ public class FSM {
      * @param movable the element changed
      * @param prop    the property which has changed
      */
-    void wasModified(Movable movable, Movable.Property prop) {
+    void wasModified(Movable<?> movable, Movable.Property prop) {
         modified = true;
 
         if (movable instanceof State) {

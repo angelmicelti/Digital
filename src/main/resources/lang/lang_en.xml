@@ -308,6 +308,7 @@
     <string name="elem_StepperMotorUnipolar_pin_P1">Phase 1</string>
     <string name="elem_StepperMotorUnipolar_pin_P2">Phase 2</string>
     <string name="elem_StepperMotorUnipolar_pin_P3">Phase 3</string>
+    <string name="elem_StepperMotorUnipolar_pin_com">Common center coil connection</string>
 
     <string name="elem_StepperMotorBipolar">Stepper Motor, bipolar</string>
     <string name="elem_StepperMotorBipolar_tt">Bipolar stepper motor with two limit position switches.
@@ -1089,6 +1090,7 @@
         {1}
         at Component: {0}</string>
     <string name="msg_errParsingGenerics">Error while parsing generics code.</string>
+    <string name="err_ROM_noFileGivenToLoad">There is no file name available for the automatic reload!</string>
 
     <string name="key_AddrBits">Address Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Number of address bits used.</string>
@@ -1236,8 +1238,11 @@
     <string name="key_commonConnectionType_anode">Anode</string>
 
     <string name="key_ledPersistence">Avoid Flicker</string><!-- Seven-Seg, LedMatrix -->
-    <string name="key_ledPersistence_tt">It is not possible to increase the frequency so much that the flickering disappears.
-        With this option you can stabilize the display by keeping the LEDs on until the common cathode goes down again.
+    <string name="key_ledPersistence_tt">It is not possible to increase the frequency so much that the flickering
+        disappears.
+        In order to suppress the flickering nevertheless, a "afterglow" can be switched on for the LEDs with this
+        option.
+        If enabled, the LEDs remain on, even if one of the pins changes to high-z.
         This simulates a frequency above the critical flicker fusion frequency.</string>
     <string name="key_atf1502Fitter">ATF15xx Fitter</string>
     <string name="key_atf1502Fitter_tt">Path to the fitter for the ATF15xx.
@@ -1465,6 +1470,30 @@
     <string name="key_layoutShapeDelta_tt">Used by the layout shape type. Sets the distance to the previous pin.
     </string>
 
+    <string name="key_colorScheme">Color-Scheme</string>
+    <string name="key_colorScheme_DEFAULT">Normal</string>
+    <string name="key_colorScheme_DARK">Dark</string>
+    <string name="key_colorScheme_COLOR_BLIND">red/green colorblind</string>
+    <string name="key_colorScheme_CUSTOM">User Defined</string>
+    <string name="key_customColorScheme">User Defined Colors</string>
+    <string name="menu_colorSchemePreset">Preset</string>
+    <string name="colorName_BACKGROUND">Background</string>
+    <string name="colorName_MAIN">Foreground</string>
+    <string name="colorName_WIRE">Wire</string>
+    <string name="colorName_WIRE_HIGH">Wire HIGH</string>
+    <string name="colorName_WIRE_LOW">Wire LOW</string>
+    <string name="colorName_WIRE_VALUE">Value at the wire</string>
+    <string name="colorName_WIRE_OUT">Output</string>
+    <string name="colorName_WIRE_Z">Wire HIGH-Z</string>
+    <string name="colorName_ERROR">Error</string>
+    <string name="colorName_PASSED">Ok</string>
+    <string name="colorName_PINS">Pins</string>
+    <string name="colorName_GRID">Grid</string>
+    <string name="colorName_TESTCASE">Test case</string>
+    <string name="colorName_DISABLED">Disabled</string>
+    <string name="colorName_ASYNC">Asynchronous</string>
+    <string name="colorName_HIGHLIGHT">Highlighted</string>
+
     <string name="mod_insertWire">Inserted wire.</string>
     <string name="mod_insertCopied">Insert from clipboard.</string>
     <string name="mod_setKey_N0_in_element_N1">Value ''{0}'' in component ''{1}'' modified.</string>
@@ -1499,6 +1528,45 @@
     <string name="lib_peripherals">Peripherals</string>
     <string name="lib_ram">RAM</string>
     <string name="lib_eeprom">EEPROM</string>
+
+    <string name="cli_cli">Command Line Interface</string>
+    <string name="cli_nonOptionalArgumentMissing_N">The non-optional argument {0} is missing.</string>
+    <string name="cli_notABool_N">The value {0} is no bool.</string>
+    <string name="cli_notANumber_N">The value {0} is not a number.</string>
+    <string name="cli_noArgument_N_available">The argument {0} is not defined.</string>
+    <string name="cli_notEnoughArgumentsGiven">There are not enough arguments.</string>
+    <string name="cli_toMuchArguments">There are too many arguments.</string>
+    <string name="cli_invalidType_N">Invalid type.</string>
+    <string name="cli_command_N_hasNoSubCommand_N">The command {0} has no sub-command {1}.</string>
+    <string name="cli_options">Options:</string>
+
+    <string name="cli_help_test">The first file name specifies the circuit to be tested.
+        If a second file name is specified, the test cases are executed from this file.
+        If no second file name is specified, the tests are executed from the first file.
+    </string>
+    <string name="cli_help_test_circ">Name of the file to be tested.</string>
+    <string name="cli_help_test_tests">Name of a file with test cases.</string>
+    <string name="cli_help_test_allowMissingInputs">Allows the missing of inputs in the circuit which are
+        defined in the test case. This can be useful if there are several possible solutions which may
+        depend on different inputs.
+    </string>
+    <string name="cli_thereAreTestFailures">Tests have failed.</string>
+    <string name="cli_errorExecutingTests">An error has occurred during the execution of the tests.</string>
+
+    <string name="cli_help_svg">Can be used to create an SVG file from a circuit.</string>
+    <string name="cli_help_svg_dig">The file name of the circuit.</string>
+    <string name="cli_help_svg_svg">The name of the SVG file to be written.</string>
+    <string name="cli_help_svg_ieee">Use of the IEEE symbols.</string>
+    <string name="cli_errorCreatingSVG">Error while creating the SVG file!</string>
+
+    <string name="cli_help_stats">Creates a CSV file which contains the circuit statistics.
+        All components used are listed in the CSV file.
+    </string>
+    <string name="cli_help_stats_dig">File name of the circuit.</string>
+    <string name="cli_help_stats_csv">Name of the csv file to be created.
+        If this option is missing, the table is written to stdout.
+    </string>
+    <string name="cli_errorCreatingStats">Error while creating the stats file!</string>
 
     <string name="menu_window">Windows</string>
     <string name="menu_about">About</string>
@@ -1569,7 +1637,7 @@
     <string name="menu_runToBreakMicro">Run To Break in Single Gate Mode</string>
     <string name="menu_runToBreakMicro_tt">Executes all single gate steps until a rising edge is detected on a break component.
         If there is no break component, the remaining single gate steps are executed.</string>
-    <string name="menu_synthesise">Synthesise</string>
+    <string name="menu_synthesise">Synthesis</string>
     <string name="menu_synthesise_tt">Generates the minimal bool expressions described by a truth table.</string>
     <string name="menu_table_N_variables">{0} variables</string>
     <string name="menu_table_create">Create</string>
@@ -1597,6 +1665,7 @@
     <string name="menu_table_create_hardware">Device</string>
     <string name="menu_table_create_jedec_tt">Creates a JEDEC file for the device</string>
     <string name="menu_table_exportTableLaTeX">Export LaTeX</string>
+    <string name="menu_table_exportTablePlainText">Export Plain Text</string>
     <string name="menu_table_createFunctionFixture">Export Test Case</string>
     <string name="menu_table_createFunctionFixture_tt">Creates a test case description that can be used in a test
         case.
@@ -1716,11 +1785,9 @@
         The icons are taken from the &lt;a href=&quot;http://tango.freedesktop.org&quot;&gt;Tango Desktop Project&lt;/a&gt;.
 
         Visit the project at &lt;a href=&quot;https://github.com/hneemann/[[name]]&quot;&gt;GitHub&lt;/a&gt;.
-        At Github you can also &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;download&lt;/a&gt;
-        the latest release.
+        At Github you can also &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;download&lt;/a&gt; the latest release.
 
-        There you also can file an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;issue&lt;/a&gt;
-        or suggest
+        There you also can file an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;issue&lt;/a&gt; or suggest
         an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?labels=enhancement&quot;&gt;enhancement&lt;/a&gt;.
     </string>
     <string name="msg_N_nodes">{0} nodes</string>
@@ -1977,6 +2044,22 @@ loop(a,16)
 end loop
 </pre>
 
+<p>Under certain circumstances it may be necessary to be able to react to the initial
+state of the circuit. Therefore the signals provided in the circuit can be used within
+the test case. For example, if a counter that starts in an undefined state is to be
+tested, it can be clocked to a defined state:</p>
+
+<pre>C Q_3 Q_2 Q_1 Q_0
+
+# clock counter to 1111
+while(!(Q_3 & Q_2 & Q_1 & Q_0))
+C x x x x
+end while
+
+# start the test execution
+repeat(16) C bits(4,n)
+</pre>
+
 <p>It may be helpful to generate random numbers in test cases.
 These can be created with the function 'random([n])'. The generated number is greater
 than or equal to zero and less than [n]. Considering a 16-bit multiplier as an example,
@@ -2025,7 +2108,7 @@ Therefore, the signal 'D_out' is also available to check the value in this case.
     <string name="err_fsmNumberUsedTwice_N">State Number {0} used twice.</string>
     <string name="err_fsmNoInitialState">There is no initial state (state number zero).</string>
     <string name="err_fsmState_N_notFound">State ''{0}'' not found!</string>
-    <string name="err_fsmInvalidOutputAssignment_N">Wrong  assignment to output (''{0}'')!</string>
+    <string name="err_fsmInvalidOutputAssignment_N">Wrong assignment to output (''{0}'')!</string>
     <string name="err_fsmErrorInCondition_N">Error in condition ''{0}''!</string>
     <string name="key_stateNum">State Number</string>
     <string name="key_stateNum_tt">The number which represents this state.</string>
@@ -2036,7 +2119,8 @@ Therefore, the signal 'D_out' is also available to check the value in this case.
         With simple assignments like "A=1, B=0" outputs can be set.
         With instructions like "A=101", multi-bit outputs can be set.
         Outputs that are not defined here are set to zero in states.
-        For transitions, unspecified outputs remain unchanged.</string>
+        For transitions, unspecified outputs remain unchanged.
+    </string>
     <string name="key_transCond">Condition</string>
     <string name="key_transCond_tt">A boolean expression.</string>
     <string name="key_transRad">Radius</string>

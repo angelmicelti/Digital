@@ -1,15 +1,27 @@
 Release Notes
 
 Head, planned as v0.25
+- Color schemes have been added to support color-blind users.
 - Unipolar and bipolar stepper motors were added.
-- move the "lib" folder from the "examples" folder to the root folder.
+- Moved the "lib" folder from the "examples" folder to the root folder.
+  - In case you have added your own library circuits, you have to move
+    them manually as well.
 - Reordering of the cells in the K-Map
 - Counters are able to act as program counters via the remote interface.
-- 74193 was added
+- The circuits created have a more visible separation of the inputs.
+- The hex seven seg display is turned of in case of a high-z input.
+- Improved test case parser. Now the test case is able to react on the
+  circuit's state.
+- 7482, 74193 and 744017 were added
 - Breaking changes:
   - The layout shape uses a slightly different algorithm to determine
     the pin positions. You may need to adjust usages of embedded circuits
     that use the layout shape.
+  - The CommandLineTester has moved! Tests are now executed like this:
+    java -cp Digital.jar CLI test [file to test]
+       [-tests [optional file with test cases]]
+  - Text formatting was reworked. Disable formatting with a '\' in the
+    beginning does not longer work. Use "\_" to escape a underscore.
 
 v0.24, released on 1. Feb. 2020
 - Improved SVG export

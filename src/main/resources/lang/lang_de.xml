@@ -309,6 +309,7 @@
     <string name="elem_StepperMotorUnipolar_pin_P1">Phase 1</string>
     <string name="elem_StepperMotorUnipolar_pin_P2">Phase 2</string>
     <string name="elem_StepperMotorUnipolar_pin_P3">Phase 3</string>
+    <string name="elem_StepperMotorUnipolar_pin_com">Gemeinsamer Mittenanschluss</string>
 
     <string name="elem_StepperMotorBipolar">Schrittmotor, bipolar</string>
     <string name="elem_StepperMotorBipolar_tt">Bipolarer Schrittmotor mit zwei Endlagenschaltern. Die Endlagenschalter
@@ -1114,6 +1115,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="msg_errParsingGenerics">Fehler bei der Analyse des generischen Codes.</string>
 
     <string name="err_vgaModeNotDetected_N">Videomodus wurde nicht erkannt ({0})</string>
+    <string name="err_ROM_noFileGivenToLoad">Es ist kein Dateiname für das automatische Neuladen verfügbar!</string>
 
     <string name="key_AddrBits">Adress-Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Anzahl der Adress-Bits, die verwendet werden.</string>
@@ -1264,7 +1266,9 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="key_ledPersistence">Flimmern vermeiden</string><!-- Seven-Seg, LedMatrix -->
     <string name="key_ledPersistence_tt">Die Schaltfrequenz in der Simulation kann nicht so hoch werden,
         dass das menschliche Auge kein Flimmern mehr wahrnimmt. Um dennoch das Flackern zu unterdrücken, kann
-        bei den LEDs mit dieser Option ein "nachleuchten" eingeschaltet werden.</string>
+        bei den LEDs mit dieser Option ein "nachleuchten" eingeschaltet werden. Dabei leuchten die LEDs weiter, auch
+        wenn einer der Anschlüsse zu High-Z wechselt.
+    </string>
     <string name="key_atf1502Fitter">ATF15xx Fitter</string>
     <string name="key_atf1502Fitter_tt">Pfad zum Fitter für den ATF15xx.
         Geben Sie hier das Verzeichnis an, welches die Dateien fit15xx.exe enthält.
@@ -1502,6 +1506,30 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="key_layoutShapeDelta_tt">Wird vom Layout-Shape verwendet. Legt den Abstand zum vorherigen Pin fest.
     </string>
 
+    <string name="key_colorScheme">Farbschema</string>
+    <string name="key_colorScheme_DEFAULT">Normal</string>
+    <string name="key_colorScheme_DARK">Dunkel</string>
+    <string name="key_colorScheme_COLOR_BLIND">Rot-Grün-Sehschwäche</string>
+    <string name="key_colorScheme_CUSTOM">Benutzerdefiniert</string>
+    <string name="menu_colorSchemePreset">Vorgabe</string>
+    <string name="key_customColorScheme">Benutzerdefinierte Farben</string>
+    <string name="colorName_BACKGROUND">Hintergrund</string>
+    <string name="colorName_MAIN">Vordergrund</string>
+    <string name="colorName_WIRE">Leitung</string>
+    <string name="colorName_WIRE_HIGH">Leitung HIGH</string>
+    <string name="colorName_WIRE_LOW">Leitung LOW</string>
+    <string name="colorName_WIRE_VALUE">Wert auf der Leitung</string>
+    <string name="colorName_WIRE_OUT">Ausgang</string>
+    <string name="colorName_WIRE_Z">Leitung HIGH-Z</string>
+    <string name="colorName_ERROR">Fehler</string>
+    <string name="colorName_PASSED">Ok</string>
+    <string name="colorName_PINS">Pins</string>
+    <string name="colorName_GRID">Gitter</string>
+    <string name="colorName_TESTCASE">Testfall</string>
+    <string name="colorName_DISABLED">Deaktiviert</string>
+    <string name="colorName_ASYNC">Asynchron</string>
+    <string name="colorName_HIGHLIGHT">Hervorgehoben</string>
+
     <string name="mod_insertWire">Leitung eingefügt.</string>
     <string name="mod_insertCopied">Aus Zwischenablage eingefügt.</string>
     <string name="mod_setKey_N0_in_element_N1">Wert ''{0}'' in Element ''{1}'' verändert.</string>
@@ -1536,6 +1564,47 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="lib_more">mehr</string>
     <string name="lib_ram">RAM</string>
     <string name="lib_eeprom">EEPROM</string>
+
+    <string name="cli_cli">Steuerung per Kommandozeile</string>
+    <string name="cli_nonOptionalArgumentMissing_N">Es fehlt das nicht optionale Argument {0}.</string>
+    <string name="cli_notABool_N">Der Wert {0} ist kein bool.</string>
+    <string name="cli_notANumber_N">Der Wert {0} ist keine Zahl.</string>
+    <string name="cli_noArgument_N_available">Das Argument {0} ist nicht definiert.</string>
+    <string name="cli_notEnoughArgumentsGiven">Es sind nicht genug Argumente vorhanden.</string>
+    <string name="cli_toMuchArguments">Es gibt zu viele Argumente.</string>
+    <string name="cli_invalidType_N">Ungültiger Typ.</string>
+    <string name="cli_command_N_hasNoSubCommand_N">Der Befehl {0} hat keinen Subbefehl {1}.</string>
+    <string name="cli_options">Optionen:</string>
+
+    <string name="cli_help_test">Der erste Dateiname gibt die zu testende Schaltung an.
+        Wenn ein zweiter Dateiname angegeben wird, werden die Testfälle aus dieser Datei ausgeführt.
+        Wird kein zweiter Dateiname angegeben, werden die Tests aus der ersten Datei ausgeführt.
+    </string>
+    <string name="cli_help_test_circ">Name der zu testenden Datei.</string>
+    <string name="cli_help_test_tests">Name einer Datei mit Testfällen.</string>
+    <string name="cli_help_test_allowMissingInputs">Erlaubt das Fehlen von Eingängen in der Schaltung die im
+        Testfall definiert sind. Dies kann sinnvoll sein, wenn es mehrere mögliche Lösungen gibt, die von
+        verschiedenen Eingängen abhängig sein können.
+    </string>
+    <string name="cli_thereAreTestFailures">Es sind Tests fehlgeschlagen.</string>
+    <string name="cli_errorExecutingTests">Es ist ein Fehler bei der Ausführung der Tests aufgetreten.</string>
+
+    <string name="cli_help_svg">Kann verwendet werden, um aus einer Schaltung
+        eine SVG-Datei zu erzeugen.
+    </string>
+    <string name="cli_help_svg_dig">Der Dateiname der Schaltung.</string>
+    <string name="cli_help_svg_svg">Der Name der zu schreibenden SVG-Datei.</string>
+    <string name="cli_help_svg_ieee">Verwendung der IEEE Symbole.</string>
+    <string name="cli_errorCreatingSVG">Fehler bei der Erzeugung der SVG Datei!</string>
+
+    <string name="cli_help_stats">Erzeugt eine CSV Datei welche die Schaltungsstatistik enthält.
+        Aufgeführt sind alle verwendeten Komponenten.
+    </string>
+    <string name="cli_help_stats_dig">Name der Schaltung.</string>
+    <string name="cli_help_stats_csv">Name der Ausgabedatei.
+        Wenn diese Option fehlt, erfolgt eine Ausgabe auf die Konsole.
+    </string>
+    <string name="cli_errorCreatingStats">Fehler bei der Erzeugung der CSV Datei!</string>
 
     <string name="menu_window">Fenster</string>
     <string name="menu_about">Über Digital</string>
@@ -1635,6 +1704,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="menu_table_create_hardware">Bausteine</string>
     <string name="menu_table_create_jedec_tt">Erzeugt eine JEDEC Datei für den Baustein</string>
     <string name="menu_table_exportTableLaTeX">Erzeuge LaTeX</string>
+    <string name="menu_table_exportTablePlainText">Erzeuge einfachen Text</string>
     <string name="menu_table_createFunctionFixture">Erzeuge Testfall</string>
     <string name="menu_table_createFunctionFixture_tt">Erzeugt eine Testfallbeschreibung, welche in einen Testfall
         übernommen werden kann.
@@ -2025,6 +2095,23 @@ loop(a,16)
 end loop
 </pre>
 
+<p>Unter Umständen kann es notwendig sein, auf den Startzustand der Schaltung
+reagieren zu können. Daher können die Signale, die in der Schaltung bereitgestellt werden,
+innerhalb des Testfalls verwendet werden. Soll zum Beispiel ein Zähler, welcher in
+einem undefinierten Zustand startet, getestet werden, kann dieser in einen definierten
+Zustand getaktet werden:</p>
+
+<pre>C Q_3 Q_2 Q_1 Q_0
+
+# clock counter to 1111
+while(!(Q_3 & Q_2 & Q_1 & Q_0))
+C x x x x
+end while
+
+# start the test execution
+repeat(16) C bits(4,n)
+</pre>
+
 <p>Unter Umständen ist die Erzeugung von Zufallszahlen in Testfällen hilfreich.
 Diese können mit der Funktion 'random([n])' erzeugt werden. Die erzeugte Zahl ist
 größer gleich Null und kleiner als [n]. Betrachtet man einen 16-Bit Multiplikator als Beispiel,
@@ -2074,7 +2161,9 @@ Daher steht auch das Signal 'D_out' zur Verfügung, um in diesem Fall den Wert z
     <string name="key_stateNum">Zustandsnummer</string>
     <string name="key_stateNum_tt">Die Nummer welche diesen Zustand representiert.</string>
     <string name="key_isInitialState">Startzustand</string>
-    <string name="key_isInitialState_tt">Wenn gesetzt, ist dies der Initialzustand, in welchem der Automat gestartet wird.</string>
+    <string name="key_isInitialState_tt">Wenn gesetzt, ist dies der Initialzustand, in welchem der Automat gestartet
+        wird.
+    </string>
     <string name="key_stateValues">Ausgänge</string>
     <string name="key_stateValues_tt">Legt Ausgangswerte fest.
         Mit einfachen Zuweisungen wie "A=1, B=0" können Ausgänge gesetzt werden.

@@ -32,9 +32,9 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
     private enum InMode {
         HEX(Lang.get("attr_dialogHex")),
         DECIMAL(Lang.get("attr_dialogDecimal")),
+        BIN(Lang.get("attr_dialogBinary")),
         OCTAL(Lang.get("attr_dialogOctal")),
         ASCII(Lang.get("attr_dialogAscii")),
-        // highZ needs to be the last entry!! See InMode#values(boolean)
         HIGHZ(Lang.get("attr_dialogHighz"));
 
         private final String langText;
@@ -48,21 +48,37 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
             return langText;
         }
 
-        public static InMode[] values(boolean supportsHighZ) {
+        private static InMode[] values(boolean supportsHighZ) {
             if (supportsHighZ) {
                 return values();
             } else {
                 return Arrays.copyOf(values(), values().length - 1);
             }
         }
+
+        private static InMode getByFormat(IntFormat format) {
+            switch (format) {
+                case decSigned:
+                case dec:
+                    return SingleValueDialog.InMode.DECIMAL;
+                case oct:
+                    return SingleValueDialog.InMode.OCTAL;
+                case bin:
+                    return SingleValueDialog.InMode.BIN;
+                case ascii:
+                    return SingleValueDialog.InMode.ASCII;
+                default:
+                    return SingleValueDialog.InMode.HEX;
+            }
+        }
     }
 
     private final JTextField textField;
+    private boolean textIsModifying;
     private final boolean supportsHighZ;
     private final JComboBox<InMode> formatComboBox;
     private final long mask;
     private JCheckBox[] checkBoxes;
-    private boolean programmaticModifyingFormat = false;
     private long editValue;
 
     /**
@@ -89,10 +105,7 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
         textField.setHorizontalAlignment(JTextField.RIGHT);
 
         formatComboBox = new JComboBox<>(InMode.values(supportsHighZ));
-        formatComboBox.addActionListener(actionEvent -> {
-            if (!programmaticModifyingFormat)
-                setLongToDialog(editValue);
-        });
+        formatComboBox.addActionListener(actionEvent -> setLongToDialog(editValue));
 
         model.modify(() -> model.addObserver(this));
         addWindowListener(new WindowAdapter() {
@@ -203,39 +216,52 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
     }
 
     private void setLongToDialog(long editValue) {
-        switch (getSelectedFormat()) {
-            case ASCII:
-                char val = (char) (editValue);
-                textField.setText("'" + val + "'");
-                textField.setCaretPosition(1);
-                break;
-            case DECIMAL:
-                textField.setText(Long.toString(editValue));
-                break;
-            case HEX:
-                textField.setText("0x" + Long.toHexString(editValue));
-                break;
-            case OCTAL:
-                textField.setText("0" + Long.toOctalString(editValue));
-                break;
-            case HIGHZ:
-                textField.setText("?");
-                break;
-            default:
+        if (!textIsModifying) {
+            switch (getSelectedFormat()) {
+                case ASCII:
+                    char val = (char) (editValue);
+                    textField.setText("'" + val + "'");
+                    textField.setCaretPosition(1);
+                    break;
+                case DECIMAL:
+                    textField.setText(Long.toString(editValue));
+                    break;
+                case HEX:
+                    textField.setText("0x" + Long.toHexString(editValue));
+                    break;
+                case BIN:
+                    textField.setText("0b" + Long.toBinaryString(editValue));
+                    break;
+                case OCTAL:
+                    textField.setText("0" + Long.toOctalString(editValue));
+                    break;
+                case HIGHZ:
+                    textField.setText("?");
+                    break;
+                default:
+            }
+            textField.requestFocus();
         }
-        textField.requestFocus();
     }
 
     private InMode getSelectedFormat() {
         return (InMode) formatComboBox.getSelectedItem();
     }
 
+    /**
+     * Sets the selected format
+     *
+     * @param format the format
+     * @return this for chained calls
+     */
+    public SingleValueDialog setSelectedFormat(IntFormat format) {
+        setSelectedFormat(InMode.getByFormat(format));
+        return this;
+    }
+
     private void setSelectedFormat(InMode format) {
-        if (!getSelectedFormat().equals(format)) {
-            programmaticModifyingFormat = true;
+        if (!getSelectedFormat().equals(format))
             formatComboBox.setSelectedItem(format);
-            programmaticModifyingFormat = false;
-        }
     }
 
     private void setStringToDialog(String text) {
@@ -254,6 +280,8 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
             } else {
                 if (text.startsWith("0x"))
                     setSelectedFormat(InMode.HEX);
+                else if (text.startsWith("0b"))
+                    setSelectedFormat(InMode.BIN);
                 else if (text.startsWith("0") && text.length() > 1)
                     setSelectedFormat(InMode.OCTAL);
                 else
@@ -269,7 +297,7 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
         }
     }
 
-    private static final class MyDocumentListener implements DocumentListener {
+    private final class MyDocumentListener implements DocumentListener {
         private final Runnable runnable;
 
         private MyDocumentListener(Runnable runnable) {
@@ -278,17 +306,23 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
 
         @Override
         public void insertUpdate(DocumentEvent documentEvent) {
-            runnable.run();
+            run();
         }
 
         @Override
         public void removeUpdate(DocumentEvent documentEvent) {
-            runnable.run();
+            run();
         }
 
         @Override
         public void changedUpdate(DocumentEvent documentEvent) {
+            run();
+        }
+
+        private void run() {
+            textIsModifying = true;
             runnable.run();
+            textIsModifying = false;
         }
     }
 

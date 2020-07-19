@@ -740,12 +740,13 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                                 .showDialog();
                 if (modified != null) {
                     FormatToExpression.setDefaultFormat(modified.get(Keys.SETTINGS_EXPRESSION_FORMAT));
+                    ColorScheme.updateCustomColorScheme(modified);
 
                     if (Settings.getInstance().requiresRestart(modified)) {
                         Lang.setLanguage(modified.get(Keys.SETTINGS_LANGUAGE));
                         JOptionPane.showMessageDialog(Main.this, Lang.get("msg_restartNeeded"));
                     }
-                    if (!Settings.getInstance().getAttributes().equalsKey(Keys.SETTINGS_GRID, modified))
+                    if (Settings.getInstance().requiresRepaint(modified))
                         circuitComponent.graphicHasChanged();
 
                     Settings.getInstance().getAttributes().getValuesFrom(modified);
@@ -1139,11 +1140,10 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     public void startTests() {
         try {
             ArrayList<ValueTableDialog.TestSet> tsl = new ArrayList<>();
-            for (VisualElement el : circuitComponent.getCircuit().getElements())
-                if (el.equalsDescription(TestCaseElement.TESTCASEDESCRIPTION))
-                    tsl.add(new ValueTableDialog.TestSet(
-                            el.getElementAttributes().get(TestCaseElement.TESTDATA),
-                            el.getElementAttributes().getLabel()));
+            for (VisualElement el : circuitComponent.getCircuit().getTestCases())
+                tsl.add(new ValueTableDialog.TestSet(
+                        el.getElementAttributes().get(TestCaseElement.TESTDATA),
+                        el.getElementAttributes().getLabel()));
 
             if (tsl.isEmpty())
                 throw new TestingDataException(Lang.get("err_noTestData"));
@@ -1820,7 +1820,10 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     @Override
     public void start(File romHex) {
         SwingUtilities.invokeLater(() -> {
-            runModelState.enter(true, new ProgramMemoryLoader(romHex));
+            ProgramMemoryLoader modelModifier = null;
+            if (romHex != null)
+                modelModifier = new ProgramMemoryLoader(romHex);
+            runModelState.enter(true, modelModifier);
             circuitComponent.graphicHasChanged();
         });
     }
@@ -1885,6 +1888,25 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     public void stop() {
         SwingUtilities.invokeLater(this::ensureModelIsStopped);
     }
+
+    @Override
+    public String measure() throws RemoteException {
+        if (model == null)
+            throw new RemoteException("no model available");
+
+        StringBuilder sb = new StringBuilder("{");
+        model.read(() -> {
+            boolean first = true;
+            for (Signal s : model.getSignals()) {
+                if (first) first = false;
+                else sb.append(',');
+                sb.append('"').append(s.getName()).append("\":").append(s.getValue().getValue());
+            }
+        });
+        sb.append("}");
+        return sb.toString();
+    }
+
     //**********************
     // remote interface end
     //**********************
