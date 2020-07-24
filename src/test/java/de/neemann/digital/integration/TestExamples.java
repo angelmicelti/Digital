@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.integration;
 
+import de.neemann.digital.core.ErrorDetector;
 import de.neemann.digital.core.Model;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.draw.elements.VisualElement;
@@ -32,7 +33,7 @@ public class TestExamples extends TestCase {
      */
     public void testDistExamples() throws Exception {
         File examples = new File(Resources.getRoot().getParentFile().getParentFile(), "/main/dig");
-        assertEquals(293, new FileScanner(this::check).scan(examples));
+        assertEquals(299, new FileScanner(this::check).scan(examples));
         assertEquals(195, testCasesInFiles);
     }
 
@@ -78,6 +79,8 @@ public class TestExamples extends TestCase {
                         TestCaseDescription td = el.getElementAttributes().get(TestCaseElement.TESTDATA);
 
                         Model model = new ModelCreator(br.getCircuit(), br.getLibrary()).createModel(false);
+                        ErrorDetector ed = new ErrorDetector();
+                        model.addObserver(ed);
                         try {
                             TestExecutor tr = new TestExecutor(td).create(model);
 
@@ -89,6 +92,7 @@ public class TestExamples extends TestCase {
                         } finally {
                             model.close();
                         }
+                        ed.check();
                     }
             } catch (Exception e) {
                 if (shouldFail) {

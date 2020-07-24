@@ -878,14 +878,21 @@
     <string name="elem_Reset_pin_Reset">Reset Output.</string>
     <string name="elem_Reset_tt">The output of this component is held high during the initialisation of the circuit.
         After the circuit has stabilized the output goes to low.
-        If the output is inverted it behaves the opposite way.</string>
+        If the output is inverted it behaves the opposite way.
+    </string>
     <string name="elem_Break">Break</string>
     <string name="elem_Break_pin_brk">Stops the fast simulation clocking if a rising edge is detected.</string>
     <string name="elem_Break_tt">If this component is used in the circuit, the "Run To Break" button between "Start"
         and "Stop" is enabled. This button clocks the circuit until a rising edge on the input of this component is
         detected. This element can be used for debugging by clocking the circuit to any breakpoint.
         Also an assembler command BRK can be implemented. This allows to execute a program up to the next BRK command.
-        This function can only be used if the real-time clock is deactivated!</string>
+        This function can only be used if the real-time clock is deactivated!
+    </string>
+    <string name="elem_Stop">Stop</string>
+    <string name="elem_Stop_tt">A rising edge at the input stops the simulation.
+        Has the same effect as pressing the Stop button in the toolbar.
+    </string>
+    <string name="elem_Stop_pin_stop">A rising edge stops the simulation.</string>
 
     <string name="elem_External">External</string>
     <string name="elem_External_tt">Component to execute an external process to calculate the logic function.
@@ -971,7 +978,6 @@
     <string name="err_noTestInputSignalsDefined">No input signals defined in test vector!</string>
     <string name="err_noTestOutputSignalsDefined">No output signals defined in test vector!</string>
     <string name="err_noTestData">No test data found.</string>
-    <string name="err_remoteExecution">Error during execution of a remote command</string>
     <string name="err_pullUpAndDownNotAllowed">It's not allowed to connect a pull up and a pull down resistor to a single wire.</string>
     <string name="err_openingDocumentation">Could not open the browser.</string>
     <string name="err_couldNotCreateFolder_N0">Could not create folder &quot;{0}&quot;!</string>
@@ -1792,7 +1798,6 @@
     </string>
     <string name="msg_N_nodes">{0} nodes</string>
     <string name="msg_analyseErr">Error analysing the circuit</string>
-    <string name="msg_clockError">Error during a clock state change</string>
     <string name="msg_color">Color</string>
     <string name="msg_errorCalculatingStep">Error calculating a step</string>
     <string name="msg_errorCreatingModel">Error creating the circuit</string>
@@ -1803,7 +1808,6 @@
     <string name="msg_errorUpdatingLibrary">Error updating the component library!!</string>
     <string name="msg_errorReadingFile">Error reading a file</string>
     <string name="msg_errorWritingFile">Error writing a file</string>
-    <string name="msg_fastRunError">Error at fast run</string>
     <string name="msg_frequency_N">The maximum frequency is {0} kHz</string>
     <string name="msg_missingShape_N">Shape {0} is missing</string>
     <string name="msg_pins">Pin assignment</string>
