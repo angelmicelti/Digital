@@ -76,6 +76,7 @@ public class TableDialog extends JDialog {
     private static final Logger LOGGER = LoggerFactory.getLogger(TableDialog.class);
     private static final Preferences PREFS = Preferences.userRoot().node("dig").node("generator");
     private static final Color MYGRAY = new Color(230, 230, 230);
+    private static final Color ODDWHITE = new Color(255, 255, 220);
     private static final List<Key> LIST = new ArrayList<>();
 
     static {
@@ -850,8 +851,12 @@ public class TableDialog extends JDialog {
             label.setFont(font);
             if (column < undoManager.getActual().getVars().size())
                 label.setBackground(MYGRAY);
-            else
-                label.setBackground(Color.WHITE);
+            else {
+                if ((row & 4) == 0)
+                    label.setBackground(Color.WHITE);
+                else
+                    label.setBackground(ODDWHITE);
+            }
 
             if (value instanceof Integer) {
                 int v = (int) value;
@@ -904,17 +909,17 @@ public class TableDialog extends JDialog {
                 switch (expressions.size()) {
                     case 0:
                         statusBar.setVisible(false);
-                        allSolutionsDialog.setNeeded(false);
+                        allSolutionsDialog.setNeeded(false, TableDialog.this.getBounds());
                         break;
                     case 1:
                         statusBar.setVisible(true);
                         statusBar.setExpression(expressions.get(0));
-                        allSolutionsDialog.setNeeded(false);
+                        allSolutionsDialog.setNeeded(false, TableDialog.this.getBounds());
                         break;
                     default:
                         statusBar.setVisible(false);
                         allSolutionsDialog.setExpressions(expressions);
-                        allSolutionsDialog.setNeeded(true);
+                        allSolutionsDialog.setNeeded(true, TableDialog.this.getBounds());
                         toFront();
                 }
             });
