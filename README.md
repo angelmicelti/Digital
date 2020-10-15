@@ -36,7 +36,7 @@ These are the main features of Digital:
 - Simple testing of circuits: You can create test cases and execute them to verify your design.
 - Many examples: From a transmission gate D-flip-flop to a complete (simple) MIPS-like single cycle CPU.
 - Includes a simple editor for finite state machines (FSM). A FSM can then be converted to a state
-  transition table and a circuit implementing the FSM (See screenshot at the [bottom](#additional-screenshots)).
+  transition table and a circuit implementing the FSM (See [screenshot](#additional-screenshots)).
 - Contains a library with the most commonly used 74xx series integrated circuits.
 - Supports generic circuits. This allows the creation of circuits that can be parameterized when used. 
   In this way, it is possible, for e.g., to create a barrel shifter with a selectable bit width.
@@ -77,13 +77,13 @@ All other tests, including the HDL tests, were executed without errors.
 ## Documentation ##
 
 The [documentation](https://github.com/hneemann/Digital/releases/latest) is available in English, 
-German, Spanish, Portuguese and simplified Chinese.
+German, Spanish, Portuguese, French and simplified Chinese.
 It is still very incomplete but it contains a chapter "First Steps" which explains the basic usage of Digital.
 The documentation also contains a list of available 74xx chips and a list of available keyboard shortcuts. 
 
 ## Translations ##
 
-So far Digital is available in English, German, Spanish, Portuguese and simplified Chinese. 
+So far Digital is available in English, German, Spanish, Portuguese, French and simplified Chinese. 
 If someone wants to add a 
 new translation, please let me [know](mailto:digital-simulator@web.de).
 I can provide you with a special file for translation. This file is much easier to 
@@ -272,6 +272,7 @@ Many thanks to the following persons for their help:
 * Ángel Millán from the Instituto de Educación Secundaria Ies Virgen de Villadiego in Peñaflor (Sevilla), Spain
   has provided the Spanish translation.
 * XinJun Ma ([@itviewer](https://github.com/itviewer)) has provided the Chinese translation.
+* Nicolas Maltais ([@maltaisn](https://github.com/maltaisn)) has provided the French translation.
 
 ## Additional Screenshots
 
