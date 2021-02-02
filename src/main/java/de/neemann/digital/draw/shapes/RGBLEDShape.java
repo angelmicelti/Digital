@@ -6,6 +6,7 @@
 package de.neemann.digital.draw.shapes;
 
 import de.neemann.digital.core.Bits;
+import de.neemann.digital.core.ObservableValue;
 import de.neemann.digital.core.element.ElementAttributes;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.core.element.PinDescriptions;
@@ -27,7 +28,6 @@ import static de.neemann.digital.draw.shapes.OutputShape.OUT_SIZE;
  * The LED shape
  */
 public class RGBLEDShape implements Shape {
-    private static final int D = SIZE / 3;
     private final String label;
     private final PinDescriptions inputs;
     private final long max;
@@ -67,11 +67,18 @@ public class RGBLEDShape implements Shape {
     @Override
     public void readObservableValues() {
         if (ioState != null) {
-            long r = ioState.getInput(0).getValue() * 255 / max;
-            long g = ioState.getInput(1).getValue() * 255 / max;
-            long b = ioState.getInput(2).getValue() * 255 / max;
+            long r = getCol(ioState.getInput(0));
+            long g = getCol(ioState.getInput(1));
+            long b = getCol(ioState.getInput(2));
             color = new Color((int) r, (int) g, (int) b);
         }
+    }
+
+    long getCol(ObservableValue c) {
+        if (c.isHighZ())
+            return 0;
+        else
+            return c.getValue() * 255 / max;
     }
 
     @Override
@@ -82,10 +89,10 @@ public class RGBLEDShape implements Shape {
         Vector rad = new Vector(size - 2, size - 2);
         Vector radL = new Vector(size, size);
 
-        graphic.drawLine(new Vector(0, -SIZE), new Vector(D, -SIZE + D), Style.NORMAL);
-        graphic.drawLine(new Vector(0, SIZE), new Vector(D, SIZE - D), Style.NORMAL);
-
         Vector center = new Vector(1 + size, 0);
+        graphic.drawLine(new Vector(0, -SIZE), center, Style.NORMAL);
+        graphic.drawLine(new Vector(0, SIZE), center, Style.NORMAL);
+
         graphic.drawCircle(center.sub(radL), center.add(radL), Style.FILLED);
         graphic.drawCircle(center.sub(rad), center.add(rad), Style.FILLED.deriveColor(color));
         Vector textPos = new Vector(2 * size + OUT_SIZE, 0);

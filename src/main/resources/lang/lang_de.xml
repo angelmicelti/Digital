@@ -13,12 +13,6 @@
     <string name="attr_openCircuit_tt">Öffnet die Schaltung in einem neuen Fenster.</string>
     <string name="attr_help">Hilfe</string>
     <string name="attr_help_tt">Zeigt eine Beschreibung dieses Elements.</string>
-    <string name="attr_dialogHex">Hex</string>
-    <string name="attr_dialogDecimal">Dezimal</string>
-    <string name="attr_dialogAscii">Ascii</string>
-    <string name="attr_dialogHighz">HighZ</string>
-    <string name="attr_dialogOctal">Oktal</string>
-    <string name="attr_dialogBinary">Binär</string>
     <string name="attr_panel_primary">Allgemein</string>
     <string name="attr_panel_secondary">Erweitert</string>
     <string name="btn_discard">Verwerfen</string>
@@ -181,7 +175,7 @@
         die Überschrift.
     </string>
     <string name="elem_Probe">Messwert</string>
-    <string name="elem_Probe_tt">Ein Messwert, welcher im Messwertgraphen bzw. in der Messwertetabelle dargestellt wird.
+    <string name="elem_Probe_tt">Ein Messwert, welcher im Messwertegraphen bzw. in der Messwertetabelle dargestellt wird.
         Dieses Element kann verwendet werden, um auf einfache Weise Werte aus eingebetteten Schaltungen zu beobachten.
         Hat keine weitere Funktion für die Simulation.
     </string>
@@ -199,7 +193,9 @@
 
     <string name="elem_PolarityAwareLED">LED mit zwei Anschlüssen</string>
     <string name="elem_PolarityAwareLED_tt">LED mit zwei Anschlüssen für die Kathode und die Anode. Die LED leuchtet
-        nur, wenn die Anode auf High und die Kathode auf Low gelegt wird.</string>
+        nur, wenn die Anode auf High und die Kathode auf Low gelegt wird. Diese LED kann nicht als Pull-Down-Widerstand
+        verwendet werden. Es handelt sich ausschließlich um ein Anzeigeelement. Der abgebildete Widerstand soll
+        lediglich den erforderlichen Serienwiderstand zur Strombegrenzung symbolisieren.</string>
     <string name="elem_PolarityAwareLED_pin_A">Die Anode der LED.</string>
     <string name="elem_PolarityAwareLED_pin_C">Die Kathode der LED.</string>
 
@@ -236,11 +232,24 @@
         Jedes Bit in diesem Datenwort repräsentiert den Zustand einer Zeile der aktuellen Spalte.
     </string>
     <string name="elem_LedMatrix_pin_c-addr">Die Nummer der aktuellen Spalte, dessen Zustand gerade am anderen Eingang anliegt.</string>
-    <string name="elem_Data">Messwertgraph</string>
-    <string name="elem_Data_tt">Zeigt einen Messwertgraphen innerhalb des Schaltkreisbereichs.
+    <string name="elem_Data">Messwertegraph</string>
+    <string name="elem_Data_tt">Zeigt einen Messwertegraphen innerhalb des Schaltkreisbereichs.
         Es können sowohl komplette Taktschritte als auch einzelne Gatter-Veränderungen angezeigt werden.
         Hat keine weitere Funktion für die Simulation.
     </string>
+    <string name="elem_ScopeTrigger">Getriggerter Messwertegraph</string>
+    <string name="elem_ScopeTrigger_short">Scope</string>
+    <string name="elem_ScopeTrigger_tt">Zeigt einen Messwertegraph, wobei nur dann Messwerte gespeichert werden,
+        wenn sich das Eingangssignal verändert.
+        Das Speichern findet statt, wenn sich die Schaltung stabilisiert hat.
+        Der Trigger startet nicht die Messung wie bei einem echten Oszilloscop, sondern jedes Triggerereignis
+        speichert einen einzigen Messwert für jedes der angezeigten Signale.
+        Als direkten Eingang gibt es nur den Trigger. Als Signale können die Ein- und Ausgänge der Schaltung,
+        Flipflops und Register und der Messwert verwendet werden.
+        In den jeweiligen Komponenten kann dies jeweils aktiviert werden.
+    </string>
+    <string name="elem_ScopeTrigger_pin_T">Ein Änderung an diesem Eingang veranlasst das Speichern von Messwerten.</string>
+
     <string name="elem_RotEncoder">Drehencoder</string>
     <string name="elem_RotEncoder_tt">Drehknopf mit Drehencoder zur Erfassung einer Drehbewegung.</string>
     <string name="elem_RotEncoder_pin_A">Encodersignal A</string>
@@ -334,6 +343,14 @@
     <string name="elem_VDD">Betriebsspannung</string>
     <string name="elem_VDD_tt">Anschluss zur Betriebsspannung. Gibt immer Eins aus.</string>
     <string name="elem_VDD_pin_out">Dieser Ausgang gibt immer 1 aus.</string>
+    <string name="elem_NotConnected">Nicht verbunden</string>
+    <string name="elem_NotConnected_tt">Dieses Element kann verwendet werden, um eine Leitung auf High-Z zu
+        legen. Wird ein Eingang eines logischen Gatters auf High-Z gesetzt, ist der gelesene Wert undefiniert.
+        Zu beachten ist, dass es in der Realität in vielen Fällen zu überhöhter Stromaufnahme und gar zu
+        Beschädigungen kommen kann, wenn ein Digitaleingang nicht auf Null oder Eins gesetzt wird, sondern
+        unbeschaltet bleibt.</string>
+    <string name="elem_NotConnected_pin_out">Dieser Ausgang gibt immer High-Z aus.</string>
+    <string name="err_notConnectedNotAllowed">Das Nicht-Verbunden Symbol ist hier nicht erlaubt!</string>
     <string name="elem_Const">Konstante</string>
     <string name="elem_Const_tt">Ein Element, welches einen konstanten Wert ausgibt. Die Konstante kann über den Attribute-Dialog festgelegt werden.</string>
     <string name="elem_Const_pin_out">Gibt den gesetzten Wert als Konstante aus.</string>
@@ -549,28 +566,63 @@
     <string name="elem_Register_short">Reg</string>
     <string name="elem_Register_tt">Ein Baustein zum Speichern von Werten. Die Bitbreite kann gewählt werden.
         Der an Eingang D anliegende Wert wird bei einer steigenden Flanke an Eingang C gespeichert.
-        Im Unterschied zu einem D Flipflop verfügt das Register über einen Freigabeeingang für den Takt.</string>
+        Im Unterschied zu einem D Flipflop verfügt das Register über einen Freigabeeingang für den Takt.
+    </string>
     <string name="elem_Register_pin_D">Das zu speichernde Datenwort liegt hier an.</string>
-    <string name="elem_Register_pin_C">Der Takteingang. Eine steigende Flanke speichert den an D anliegenden Wert ab.</string>
+    <string name="elem_Register_pin_C">Der Takteingang. Eine steigende Flanke speichert den an D anliegenden Wert ab.
+    </string>
     <string name="elem_Register_pin_en">Nur wenn dieser Eingang 1 ist, kann gespeichert werden.</string>
     <string name="elem_Register_pin_Q">Gibt den abgespeicherten Wert aus.</string>
     <string name="elem_ROM">ROM</string>
-    <string name="elem_ROM_tt">Ein nichtflüchtiger Speicherbaustein welcher einmalig beschreibbar ist.
+    <string name="elem_ROM_tt">Ein nichtflüchtiger Speicherbaustein welcher einen zur Simulationszeit festen Inhalt hat.
         Die gespeicherten Daten können im Attribute-Dialog bearbeitet werden.
     </string>
-    <string name="elem_ROM_pin_A">Dieser Eingang bestimmt die Speicheradresse des Datenwortes, welches ausgegeben werden soll.</string>
+    <string name="elem_ROM_pin_A">Dieser Eingang bestimmt die Speicheradresse des Datenwortes, welches ausgegeben werden
+        soll.
+    </string>
     <string name="elem_ROM_pin_D">Hier wird das Datenwort ausgegeben, wenn am "Select"-Eingang eine 1 anliegt.</string>
-    <string name="elem_ROM_pin_sel">Ist dieser Pin high (1), ist der Ausgang aktiviert. Ist er low (0), ist der Ausgang hochohmig.</string>
+    <string name="elem_ROM_pin_sel">Ist dieser Pin high (1), ist der Ausgang aktiviert. Ist er low (0), ist der Ausgang
+        hochohmig.
+    </string>
+
+    <string name="elem_ROMDualPort">ROM Dual Port</string>
+    <string name="elem_ROMDualPort_short">ROM</string>
+    <string name="elem_ROMDualPort_tt">Ein nichtflüchtiger Speicherbaustein welcher einen zur Simulationszeit festen
+        Inhalt hat.
+        Die gespeicherten Daten können im Attribute-Dialog bearbeitet werden.
+        Im Gegensatz zum einfachen ROM verfügt dieser Baustein über zwei Leseports.
+    </string>
+    <string name="elem_ROMDualPort_pin_A1">Dieser Eingang bestimmt die Speicheradresse des Datenwortes, welches and Port
+        1 ausgegeben werden soll.
+    </string>
+    <string name="elem_ROMDualPort_pin_D1">Hier wird das Datenwort ausgegeben, wenn am "Select"-Eingang 1 eine 1
+        anliegt.
+    </string>
+    <string name="elem_ROMDualPort_pin_s1">Ist dieser Pin high (1), ist der Ausgang 1 aktiviert. Ist er low (0), ist der
+        Ausgang 1 hochohmig.
+    </string>
+    <string name="elem_ROMDualPort_pin_A2">Dieser Eingang bestimmt die Speicheradresse des Datenwortes, welches and Port
+        2 ausgegeben werden soll.
+    </string>
+    <string name="elem_ROMDualPort_pin_D2">Hier wird das Datenwort ausgegeben, wenn am "Select"-Eingang 2 eine 1
+        anliegt.
+    </string>
+    <string name="elem_ROMDualPort_pin_s2">Ist dieser Pin high (1), ist der Ausgang 2 aktiviert. Ist er low (0), ist der
+        Ausgang 2 hochohmig.
+    </string>
 
     <string name="elem_RAMDualPort">RAM, getrennte Ports</string>
     <string name="elem_RAMDualPort_short">RAM</string>
     <string name="elem_RAMDualPort_tt">Ein RAM Modul mit getrennten Daten-Anschlüssen für Lesen und Schreiben.
-        Es gibt einen Eingang für das Beschreiben und einen Ausgang für das Auslesen der gespeicherten Daten.</string>
+        Es gibt einen Eingang für das Beschreiben und einen Ausgang für das Auslesen der gespeicherten Daten.
+    </string>
     <string name="elem_RAMDualPort_pin_A">Die Adresse, an der gelesen bzw. geschrieben wird.</string>
     <string name="elem_RAMDualPort_pin_C">Der Takt. Eine steigende Flanke aktiviert das Speichern.</string>
     <string name="elem_RAMDualPort_pin_Din">Die Daten, die gespeichert werden sollen.</string>
     <string name="elem_RAMDualPort_pin_D">Ausgabe der gespeicherten Daten.</string>
-    <string name="elem_RAMDualPort_pin_ld">Ist diese Leitung high, wird der Ausgang aktiviert, und die Daten liegen dort an.</string>
+    <string name="elem_RAMDualPort_pin_ld">Ist diese Leitung high, wird der Ausgang aktiviert, und die Daten liegen dort
+        an.
+    </string>
     <string name="elem_RAMDualPort_pin_str">Ist diese Leitung high, wird das Datenwort gespeichert, wenn der Takt ansteigt.</string>
 
     <string name="elem_BlockRAMDualPort">Block-RAM, getrennte Ports</string>
@@ -708,7 +760,6 @@
     <string name="elem_CounterPreset_pin_in">Dieses Datenwort wird im Zähler gespeichert, wenn ld=1 gesetzt ist.</string>
 
 
-
     <!--Arithmetik -->
 
     <string name="elem_Add">Addierer</string>
@@ -786,6 +837,19 @@
     <string name="elem_BitCount_pin_in">Die 1-Bits in diesem Datenwort werden gezählt.</string>
     <string name="elem_BitCount_pin_out">Ausgang mit der Anzahl der gezählten 1-Bits.</string>
 
+    <string name="elem_PRNG">Zufallszahlengenerator</string>
+    <string name="elem_PRNG_tt">Kann verwendet werden um Zufallszahlen zu erzeugen.
+        Beim Starten der Simulation wird der Generator neu initialisiert, so dass bei jedem Start eine neue
+        Pseudozufallszahlenfolge erzeugt wird.
+        Der Generator kann in der laufenden Simulation mit einem definierten SEED-Wert initialisiert werden,
+        um eine definierte Pseudozufallszahlenfolge erzeugen zu lassen.
+    </string>
+    <string name="elem_PRNG_short">PRNG</string>
+    <string name="elem_PRNG_pin_S">Startwert des Generators</string>
+    <string name="elem_PRNG_pin_se">Wenn gesetzt wird der Zufallsszahlengenerator bei der nächsten steigenden Taktflanke mit dem neuen Startwert reinitialisiert.</string>
+    <string name="elem_PRNG_pin_ne">Wenn gesetzt wird bei der nächsten steigenden Taktflanke eine neue Zufallsszahl ausgegeben.</string>
+    <string name="elem_PRNG_pin_C">Der Takteingang.</string>
+    <string name="elem_PRNG_pin_R">Ausgabe der Pseudozufallszahl.</string>
 
     <!-- Schalter -->
 
@@ -875,22 +939,37 @@
     <string name="elem_TransGate_pin_~S">Steuereingang, invertiert</string>
 
 
-
     <!-- Sonstige -->
 
     <string name="elem_Testcase">Testfall</string>
     <string name="elem_Testcase_tt">Beschreibt einen Testfall. In einem Testfall kann beschrieben werden, wie sich eine
         Schaltung verhalten soll. Es kann dann automatisch überprüft werden, ob das Verhalten der Schaltung tatsächlich
-        dieser Beschreibung entspricht. Ist das nicht der Fall, wird eine entsprechende Fehlermeldung angezeigt.</string>
+        dieser Beschreibung entspricht. Ist das nicht der Fall, wird eine entsprechende Fehlermeldung angezeigt.
+        Der Hilfetext des Testfalleditors beschreibt, wie im Detail ein solcher Testfall erstellt werden kann.
+    </string>
+    <string name="elem_GenericInitCode">Generische Initialisierung</string>
+    <string name="elem_GenericInitCode_tt">Code der ausgeführt wird, um eine generische Schaltung direkt starten zu
+        können.
+        Soll eine generische Schaltung direkt gestartet werden, muss eine solche Komponente vorhanden sein.
+    </string>
+    <string name="elem_GenericCode">Code</string>
+    <string name="elem_GenericCode_tt">Code der ausgeführt wird, wenn eine generische Schaltung konkretisiert wird.
+        Kann z.B. benutzt werden, um einer Schaltung Komponenten oder Leitungen hinzuzufügen.
+    </string>
+
     <string name="elem_AsyncSeq">Asynchrones Timing</string>
     <string name="elem_AsyncSeq_tt">Erlaubt die Konfiguration des Timings eines asynchronen Automaten wie z.B einer
-        Muller-Pipeline. Die Schaltung muss im Gatterschrittmodus gestartet werden und muss zunächst einen stabilen Zustand
+        Muller-Pipeline. Die Schaltung muss im Gatterschrittmodus gestartet werden und muss zunächst einen stabilen
+        Zustand
         einnehmen. Interaktiv oder mit einem Reset-Element kann dann der Automat gestartet werden.
-        Die Taktelemente können in diesem Modus nicht verwendet werden.</string>
+        Die Taktelemente können in diesem Modus nicht verwendet werden.
+    </string>
     <string name="elem_PowerSupply">Versorgung</string>
-    <string name="elem_PowerSupply_tt">Hat keine weitere Funktion. Stellt nur sicher, dass VDD und GND angeschlossen sind.
+    <string name="elem_PowerSupply_tt">Hat keine weitere Funktion. Stellt nur sicher, dass VDD und GND angeschlossen
+        sind.
         Kann im Zusammenhang mit den 74xx Bausteinen verwendet werden, um Anschlüsse für die Spannungsversorgung
-        zu erzeugen, welche dann auch auf korrekte Beschaltung geprüft werden.</string>
+        zu erzeugen, welche dann auch auf korrekte Beschaltung geprüft werden.
+    </string>
     <string name="elem_PowerSupply_pin_VDD">Muss mit VDD verbunden werden!</string>
     <string name="elem_PowerSupply_pin_GND">Muss mit GND verbunden werden!</string>
     <string name="elem_Reset">Reset</string>
@@ -1032,11 +1111,14 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="err_vhdlExporting">Fehler beim Export zu VHDL.</string>
     <string name="err_vhdlNoEntity_N">Kein VHDL Code für {0} verfügbar!</string>
     <string name="err_verilogNoElement_N">Kein Verilog Code für {0} verfügbar!</string>
-    <string name="err_vhdlErrorWritingTestBench">Fehler beim erzeugen des Testfalls!</string>
+    <string name="err_vhdlErrorWritingTestBench">Fehler beim Erzeugen des Testfalls!</string>
     <string name="err_vhdlValuesOfType_N_notAllowed">Werte vom Typ {0} sind nicht erlaubt!</string>
     <string name="err_vhdlANameIsMissing">Es fehlt ein Name. Sind z.B. alle Pins benannt?</string>
     <string name="err_hdlMultipleOutputsConnectedToNet_N_N_N">Es sind mehrere Ausgänge miteinander verbunden.
         Diese Art der Verschaltung wird beim HDL-Export nicht unterstützt ({0}, {1}, {2}).</string>
+    <string name="err_hdlTestCaseHasGenericCode">Testfälle mit generischer Parametrisierung werden im HDL-Export nicht
+        unterstützt!
+    </string>
     <string name="err_unnamedNet">unbenanntes Netz</string>
     <string name="err_toManyVars">Zu viele Variablen!</string>
     <string name="err_invalidExpression">Ungültiger Ausdruck!</string>
@@ -1098,6 +1180,9 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="err_clocksNotAllowedInAsyncMode">Taktelemente können im asynchronen Modus nicht verwendet werden.</string>
     <string name="err_verilogExporting">Fehler beim Export zu Verilog.</string>
     <string name="err_noRomFound">Kein Programmspeicher im Modell gefunden! Ein Programmspeicher muss gewählt werden!</string>
+    <string name="err_multipleRomsFound">Mehrere Programmspeicher im Modell gefunden! Es darf nur ein Programmspeicher muss gewählt werden!</string>
+    <string name="err_noMemoryFound">Kein Speicher "{0}" im Modell gefunden!</string>
+    <string name="err_multipleMemoriesFound">Mehrere Speicher "{0}" im Modell gefunden!</string>
     <string name="err_errorLoadingRomData">Fehler beim Laden des Programmspeichers.</string>
     <string name="err_parsingSVG">Fehler beim Laden der SVG-Datei.</string>
     <string name="err_morePinsDefinedInSVGAsNeeded">Die SVG-Datei enthält Pins, die es in der Schaltung nicht gibt.</string>
@@ -1112,27 +1197,39 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="err_hdlNotKnown_N">HDL nicht bekannt: {0}</string>
     <string name="msg_errorStartCommand_N">Fehler beim Starten des Kommandos {0}</string>
     <string name="err_thereIsAUnnamedIO">Es gibt einen unbenannten Ein- oder Ausgang.</string>
-    <string name="err_NameOfIOIsInvalidOrNotUnique_N">Der Signalname "{0}" ist ungültig oder mehrfach verwendet!</string>
+    <string name="err_NameOfIOIsInvalidOrNotUnique_N">Der Signalname "{0}" ist ungültig oder mehrfach verwendet!
+    </string>
     <string name="err_substitutingError">Fehler bei der Substitution von Elementen für die Analyse.</string>
     <string name="err_evaluatingGenericsCode_N_N">Fehler bei der Auswertung des generischen Codes der Schaltung. Code:
         {1}
         in Komponente: {0}
     </string>
     <string name="msg_errParsingGenerics">Fehler bei der Analyse des generischen Codes.</string>
+    <string name="err_noGenericInitCode">Kein Initialisierungscode für die generischen Elemente.
+        Eine entsprechende Komponente muss der Schaltung hinzugefügt werden, um diese starten zu können.
+    </string>
+    <string name="err_multipleGenericInitCodes">Mehrere Initialisierungscodes für die generischen Elemente.</string>
+    <string name="err_inGenericInitCode">Fehler bei der Analyse des generischen Initialisierungscodes.</string>
+
 
     <string name="err_vgaModeNotDetected_N">Videomodus wurde nicht erkannt ({0})</string>
     <string name="err_ROM_noFileGivenToLoad">Es ist kein Dateiname für das automatische Neuladen verfügbar!</string>
+    <string name="err_virtualSignal_N_DeclaredTwiceInLine_N">Virtuelles Signal {0} doppelt definiert in Zeile {1}!</string>
 
     <string name="key_AddrBits">Adress-Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Anzahl der Adress-Bits, die verwendet werden.</string>
-    <string name="key_Bits">Daten-Bits</string><!-- And, NAnd, Or, NOr, XOr, XNOr, Not, LookUpTable, Delay, Out, In, Ground, VDD, Const, PullUp, PullDown, Driver, DriverInvSel, Multiplexer, Demultiplexer, D_FF, D_FF_AS, Register, ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM, GraphicCard, Counter, Add, Sub, Mul, BarrelShifter, Comparator, Neg, BitCount, Switch, Relay, PFET, NFET, FGPFET, FGNFET, TransGate -->
+    <string name="key_Bits">Daten-Bits</string>
     <string name="key_Bits_tt">Anzahl der Daten-Bits, die verwendet werden.</string>
     <string name="key_Color">Farbe</string><!-- LED, LightBulb, Seven-Seg, Seven-Seg-Hex, LedMatrix -->
     <string name="key_Color_tt">Die Farbe des Elementes.</string>
     <string name="key_backgroundColor">Hintergrundfarbe</string>
-    <string name="key_backgroundColor_tt">Hintergrundfarbe der Schaltung, wenn sie eingebettet wird. Wird für DILs nicht verwendet.</string>
+    <string name="key_backgroundColor_tt">Hintergrundfarbe der Schaltung, wenn sie eingebettet wird. Wird für DILs nicht
+        verwendet.
+    </string>
     <string name="key_Cycles">Timeout Zyklen</string><!-- Break -->
-    <string name="key_Cycles_tt">Wenn nach dieser Anzahl von Takten kein Break eingegangen ist, wird ein Fehler erzeugt</string>
+    <string name="key_Cycles_tt">Wenn nach dieser Anzahl von Takten kein Break eingegangen ist, wird ein Fehler
+        erzeugt
+    </string>
     <string name="key_Data">Daten</string><!-- LookUpTable, ROM, EEPROM -->
     <string name="key_Data_tt">Die Daten, welche in diesem Element gespeichert sind.</string>
     <string name="key_Default">Vorgabe</string><!-- Demultiplexer, RS_FF, JK_FF, D_FF, T_FF, JK_FF_AS, D_FF_AS -->
@@ -1209,6 +1306,11 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="key_intFormat_def">Vorgabe</string>
     <string name="key_intFormat_hex">Hexadezimal</string>
     <string name="key_intFormat_oct">Oktal</string>
+    <string name="key_intFormat_fixed">Festkomma</string>
+    <string name="key_intFormat_fixedSigned">Festkomma mit Vorzeichen</string>
+    <string name="key_intFormat_floating">Fließkomma</string>
+    <string name="key_fixedPoint">Festkommastellen</string>
+    <string name="key_fixedPoint_tt">Zahl der binären Stellen nach dem Komma.</string>
     <string name="key_barrelSigned">Verschiebeweite hat Vorzeichen</string><!-- BarrelShifter -->
     <string name="key_barrelSigned_tt">Verschiebeweite verwendet Zweierkomplement</string>
     <string name="key_barrelShifterMode">Modus</string><!-- BarrelShifter -->
@@ -1232,7 +1334,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="key_runRealTime_tt">Wenn eingeschaltet, wird beim Start der Schaltung der Echtzeittakt gestartet.</string>
     <string name="key_showDataGraph">Zeige Messwertegraph bei Simulationsstart</string>
     <string name="key_showDataGraph_tt">Beim Start der Simulation wird ein Graph mit den Messwerten angezeigt.</string>
-    <string name="key_showDataGraphMicro">Zeige Messwertgraph im Gatterschrittmodus bei Simulationsstart</string>
+    <string name="key_showDataGraphMicro">Zeige Messwertegraph im Gatterschrittmodus bei Simulationsstart</string>
     <string name="key_showDataGraphMicro_tt">Beim Start der Simulation wird ein Graph mit den Messwerten im Gatterschrittmodus
         angezeigt. Dabei werden alle Gatterwechsel angezeigt.</string>
     <string name="key_addValueToGraph">Im Messwertegraph anzeigen</string>
@@ -1518,6 +1620,12 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="key_layoutShapeDelta_tt">Wird vom Layout-Shape verwendet. Legt den Abstand zum vorherigen Pin fest.
     </string>
 
+    <string name="key_trigger">Trigger</string>
+    <string name="key_trigger_tt">Triggerbedingung für die Datenaufzeichnung.</string>
+    <string name="key_trigger_rising">steigende Flanke</string>
+    <string name="key_trigger_falling">fallende Flanke</string>
+    <string name="key_trigger_both">beide Flanken</string>
+
     <string name="key_colorScheme">Farbschema</string>
     <string name="key_colorScheme_DEFAULT">Normal</string>
     <string name="key_colorScheme_DARK">Dunkel</string>
@@ -1560,6 +1668,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="mod_modifiedMeasurementOrdering">Reihenfolge der Messwerte verändert.</string>
     <string name="mod_groupEdit">In selektierten Elementen Attribute geändert.</string>
     <string name="mod_splitWire">Leitung in zwei Leitungen teilen.</string>
+    <string name="mod_modifiedByRunningModel">Änderungen durch die laufende Simulation.</string>
 
     <string name="lib_Logic">Logisch</string>
     <string name="lib_arithmetic">Arithmetik</string>
@@ -1690,6 +1799,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
         Ist kein Break-Element vorhanden, werden die verbleibenden Einzelgatterschritte ausgeführt.</string>
     <string name="menu_synthesise">Synthese</string>
     <string name="menu_synthesise_tt">Erzeugt minimale boolsche Ausdrücke, welche durch eine Wahrheitstabelle beschrieben werden.</string>
+    <string name="menu_scale">Skalierung setzen</string>
     <string name="menu_table_N_variables">{0} Variablen</string>
     <string name="menu_table_create">Erzeugen</string>
     <string name="menu_table_createCUPL_tt">Erzeugt eine CUPL Quelldatei welche die Schaltung beschreibt.</string>
@@ -1834,19 +1944,17 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
 
     <string name="msg_errorOpeningDocumentation">Fehler beim Öffnen einer PDF-Datei!</string>
 
-    <string name="message">&lt;h1&gt;Digital&lt;/h1&gt;Ein einfacher Simulator für digitale Schaltkreise.
-        Geschrieben von H. Neemann 2016-2020
-
-        Die Icons stammen aus dem &lt;a href=&quot;http://tango.freedesktop.org&quot;&gt;Tango Desktop Project&lt;/a&gt;.
-
-        Besuche das Projekt auf &lt;a href=&quot;https://github.com/hneemann/[[name]]&quot;&gt;GitHub&lt;/a&gt;.
+    <string name="message"><![CDATA[<h1>Digital</h1>
+        <p>Ein einfacher Simulator für digitale Schaltkreise.</p>
+        <p>Geschrieben von H. Neemann 2016-2021</p>
+        <p>Die Icons stammen aus dem <a href="http://tango.freedesktop.org">Tango Desktop Project</a>.</p>
+        <p>Besuche das Projekt auf <a href="https://github.com/hneemann/[[name]]">GitHub</a>.
         Die jeweils neueste Version steht dort ebenfalls zum
-        &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;Download&lt;/a&gt; bereit.
-
-        Per GitHub kann auch ein &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;Fehler&lt;/a&gt;
+        <a href="https://github.com/hneemann/[[name]]/releases/latest">Download</a> bereit.</p>
+        <p>Per GitHub kann auch ein <a href="https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&labels=bug">Fehler</a>
         gemeldet oder
-        eine &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?labels=enhancement&quot;&gt;Verbesserung&lt;/a&gt;
-        vorgeschlagen werden.
+        eine <a href="https://github.com/hneemann/[[name]]/issues/new?labels=enhancement">Verbesserung</a>
+        vorgeschlagen werden.</p>]]>
     </string>
     <string name="msg_N_nodes">{0} aktive Elemente</string>
     <string name="msg_analyseErr">Fehler bei der Analyse der Schaltung.</string>
@@ -1969,6 +2077,7 @@ Stellen Sie sicher, dass der Flash-Vorgang abgeschlossen ist, bevor Sie diesen D
     <string name="btn_copyToClipboard_tt">Kopiert den Text in die Zwischenablage.</string>
 
     <string name="msg_supportsHDL">Exportierbar zu VHDL/Verilog.</string>
+    <string name="msg_errorSettingModelToTestCase">Fehler beim Setzen der Zeile des Testfalles.</string>
 
     <string name="ok">Ok</string>
     <string name="rot_0">0°</string>
@@ -1998,6 +2107,12 @@ Stellen Sie sicher, dass der Flash-Vorgang abgeschlossen ist, bevor Sie diesen D
     <string name="btn_help">Hilfe</string>
 
     <string name="msg_keyAsGenericAttribute">Name in einer generischen Schaltung: {0}</string>
+    <string name="attr_createConcreteCircuitLabel">Konkrete Schaltung erzeugen</string>
+    <string name="attr_createConcreteCircuit">Erzeugen</string>
+    <string name="attr_createConcreteCircuit_tt">Erzeugt aus dieser generischen Schaltung eine konkrete Schaltung
+        unter Anwendung der in diesem Element angegebenen Parameter.
+    </string>
+    <string name="attr_createConcreteCircuitErr">Fehler bei der Erzeugung der konkreten Schaltung!</string>
 
     <string name="win_romDialogHelpTitle">Zentrale ROM Inhalte</string>
     <string name="msg_romDialogHelp"><![CDATA[
@@ -2039,22 +2154,25 @@ Stellen Sie sicher, dass der Flash-Vorgang abgeschlossen ist, bevor Sie diesen D
     ]]></string>
 
     <string name="msg_expressionHelpTitle">Ausdrücke</string>
-    <string name="msg_expressionHelp">Zur Definition eines Ausdruckes können alle üblichen
-Notationen verwendet werden:
-
-Und: &quot;&amp;&quot;, &quot;&amp;&amp;&quot;, &quot;*&quot;, &quot;∧&quot;
-Oder: &quot;|&quot;, &quot;||&quot;, &quot;+&quot;, &quot;∨&quot;, &quot;#&quot;
-Exkl. Oder: &quot;^&quot;, &quot;⊻&quot;
-Nicht: &quot;!&quot;, &quot;~&quot;, &quot;&#172;&quot;
-
-UND hat Vorrang vor ODER bzw. Exkl. ODER.
-Mehrere Ausdrücke können durch "," oder ";" getrennt werden.
-Sollen die Ausdrücke benannt werden, kann die let-Anweisung verwendet
-werden: "let U=A+B, let V=A*B"</string>
+    <string name="msg_expressionHelp"><![CDATA[<html>
+        <p>Zur Definition eines Ausdruckes können alle üblichen
+        Notationen verwendet werden:</p>
+        <p>
+        Und: "&", "&&", "*", "∧"<br/>
+        Oder: "|", "||", "+", "∨", "#"<br/>
+        Exkl. Oder: "^", "⊻"<br/>
+        Nicht: "!", "~", "¬"<br/>
+        </p>
+        <p>UND hat Vorrang vor ODER bzw. Exkl. ODER.
+        Mehrere Ausdrücke können durch "," oder ";" getrennt werden.
+        Sollen die Ausdrücke benannt werden, kann die let-Anweisung verwendet
+        werden: "let U=A+B, let V=A*B"</p></html>]]>
+    </string>
     <string name="msg_testVectorHelpTitle">Testvektoren</string>
     <string name="msg_testVectorHelp"><![CDATA[<html>
     <head><style>pre { background-color: #E0E0E0;}</style></head>
     <body>
+<h3>Allgemein</h3>
 <p>Die erste Zeile muss, durch ein Leerzeichen getrennt, die
 Ein- und Ausgänge auflisten, die verwendet werden sollen.
 In den folgenden Zeilen stehen dann die Sollwerte.
@@ -2158,6 +2276,43 @@ hochohmig ('Z') gesetzt sein.</p>
 <p>Die Schaltung zu diesem Test hat nur einen Eingang 'D', welcher aber hochohmig sein kann.
 Daher steht auch das Signal 'D_out' zur Verfügung, um in diesem Fall den Wert zu prüfen.</p>
 
+<p>In besonderen Fällen kann es wünschenswert sein, aus den Signalen, die von der Schaltung zur
+Verfügung gestellt werden, ein neues Signal abzuleiten, welches dann gestestet wird.
+Ein Beispiel könnte ein Bussignal mit mehreren Bits sein, bei welchem nur ein einzelnes Bit
+getestet werden soll, wobei die übrigen Bits keinen Einfluss auf den Test haben.
+In diesem Fall kann im Test selbst ein neues Signal erzeugt werden, welches dieses eine Bit
+berechnet, so dass dann für dieses Bit Tests definiert werden können.</p>
+<p>Dies geschieht mit der Anweisung 'declare':</p>
+<pre>A B Bit
+
+declare Bit = (Bus>>3)&1;
+
+0 0  0
+0 1  0
+1 0  1
+1 1  0
+</pre>
+<p>In diesem Beispiel wird aus dem Signal 'Bus' das 3. Bit isoliert und als Signal 'Bit' für den
+Test zur Verfügung gestellt. Die Schaltung selbst enthält keinen Ausgang 'Bit'.</p>
+<h3>Prozessoren</h3>
+<p>Wenn Prozessoren getestet werden sollen, ist in der Regel eine Initialisierung des Prozessors erforderlich.
+Es ist möglich, diese Initialisierung innhalb des Testfalls vorzunehmen.
+Auf diese Weise können sich mehrere Tests in einer Schaltung befinden und eine jeweils eigene Initialisierung verwenden.
+Um diese Initialisierung vorzunehmen gibt es drei Anweisungen:</p>
+<ul>
+<li>Mit der Anweisung 'program' kann der Programmspeicher des Prozessors überschrieben werden.
+Die Anweisung <pre>program(0x8000,0x2d11,0x8000,0x2f21)</pre> schreibt vier Worte an den Anfang des Programmspeichers.
+Alle übrigen Worte werden auf Null gesetzt.</li>
+<li>Mit der Anweisung 'memory' kann ein RAM-Baustein beschrieben werden:
+<pre>memory mem(3)=7;</pre>
+Dieses Beispiel schreibt in den Speicher mit dem Label 'mem' an der Adresse 3 eine 7.</li>
+<li> Mit der Anweisung 'init' kann ein benanntes Register überschrieben werden.
+<pre>init R0=22;</pre>
+Diese Anweisung überschreibt das Register mit dem Label 'R0' mit dem Wert 22.</li>
+</ul>
+<p>Zu beachten ist, dass alle verwendeten Initialisierungen nur einmal vor Beginn der Testausführung
+angewendet werden. Es spielt dabei keine Rolle in welcher Zeile im Testfall diese Anweisungen stehen.
+Sie dürfen jedoch nicht oberhalb der Kopfzeile mit den Signalnamen verwendet werden.</p>
 </body></html>]]></string>
 
 
@@ -2203,6 +2358,18 @@ Daher steht auch das Signal 'D_out' zur Verfügung, um in diesem Fall den Wert z
     <string name="msg_fsmNewState">Neuer Zustand</string>
     <string name="msg_fsmCantCreateTable">Zustandsübergangstabelle kann nicht erzeugt werden.</string>
     <string name="msg_fsmHelpTitle">Hilfe Endliche Automaten</string>
+
+    <string name="msg_fsm_optimizer">FSM-Optimierer</string>
+    <string name="menu_fsm_optimize_state_numbers">Optimiere die Zustandsnummern</string>
+    <string name="menu_fsm_optimize_state_numbers_tt">Optimiert die Zustandsnummern so, dass ein Implementierung
+        einen möglichst geringen Aufwand hat. Die Laufzeit steigt sehr schnell mit der Komplexität des Automaten an.
+        (O(n!))
+    </string>
+    <string name="menu_fsm_optimize_state_numbers_err">Fehler wärend der Optimierung!</string>
+    <string name="msg_fsm_optimizer_initial">Startkomplexität:</string>
+    <string name="msg_fsm_optimizer_best">Beste bisher:</string>
+
+
     <string name="msg_fsmHelp"><![CDATA[
 <html><head></head>
 <body>

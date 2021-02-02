@@ -6,9 +6,7 @@
 package de.neemann.digital.testing;
 
 import de.neemann.digital.lang.Lang;
-import de.neemann.digital.testing.parser.LineEmitter;
-import de.neemann.digital.testing.parser.Parser;
-import de.neemann.digital.testing.parser.ParserException;
+import de.neemann.digital.testing.parser.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,17 +15,30 @@ import java.util.ArrayList;
  * The test data.
  */
 public class TestCaseDescription {
-    private String dataString;
+    private final String dataString;
     private transient LineEmitter lines;
     private transient ArrayList<String> names;
+    private transient ArrayList<VirtualSignal> virtualSignals;
+    private transient ModelInitializer modelInitializer;
+
+
+    /**
+     * creates a new instance
+     */
+    public TestCaseDescription() {
+        this.dataString = "";
+    }
 
     /**
      * creates a new instance
      *
      * @param data the test case description
+     * @throws IOException     IOException
+     * @throws ParserException ParserException
      */
-    public TestCaseDescription(String data) {
+    public TestCaseDescription(String data) throws IOException, ParserException {
         this.dataString = data;
+        parseDataString();
     }
 
     /**
@@ -36,7 +47,7 @@ public class TestCaseDescription {
      * @param valueToCopy the instance to copy
      */
     public TestCaseDescription(TestCaseDescription valueToCopy) {
-        this(valueToCopy.dataString);
+        this.dataString = valueToCopy.dataString;
     }
 
     /**
@@ -46,32 +57,22 @@ public class TestCaseDescription {
         return dataString;
     }
 
-    /**
-     * Sets the data and checks its validity
-     *
-     * @param data the data
-     * @throws IOException     thrown if data is not valid
-     * @throws ParserException thrown if data is not valid
-     */
-    public void setDataString(String data) throws IOException, ParserException {
-        if (!data.equals(dataString)) {
-            Parser tdp = new Parser(data).parse();
-            dataString = data;
-            lines = tdp.getLines();
-            names = tdp.getNames();
-        }
-    }
-
     private void check() throws TestingDataException {
-        if (lines == null) {
+        if (lines == null || names == null) {
             try {
-                Parser tdp = new Parser(dataString).parse();
-                lines = tdp.getLines();
-                names = tdp.getNames();
+                parseDataString();
             } catch (ParserException | IOException e) {
                 throw new TestingDataException(Lang.get("err_errorParsingTestdata"), e);
             }
         }
+    }
+
+    private void parseDataString() throws IOException, ParserException {
+        Parser tdp = new Parser(dataString).parse();
+        lines = tdp.getLines();
+        names = tdp.getNames();
+        virtualSignals = tdp.getVirtualSignals();
+        modelInitializer = tdp.getModelInitializer();
     }
 
     /**
@@ -92,6 +93,24 @@ public class TestCaseDescription {
         return names;
     }
 
+    /**
+     * @return the list of declared virtual signals
+     * @throws TestingDataException TestingDataException
+     */
+    public ArrayList<VirtualSignal> getVirtualSignals() throws TestingDataException {
+        check();
+        return virtualSignals;
+    }
+
+    /**
+     * @return the model initializer
+     * @throws TestingDataException TestingDataException
+     */
+    public ModelInitializer getModelInitializer() throws TestingDataException {
+        check();
+        return modelInitializer;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -105,5 +124,10 @@ public class TestCaseDescription {
     @Override
     public int hashCode() {
         return dataString != null ? dataString.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return dataString;
     }
 }

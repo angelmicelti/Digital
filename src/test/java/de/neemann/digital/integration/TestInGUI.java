@@ -46,6 +46,7 @@ import de.neemann.digital.gui.remote.RemoteException;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.testing.TestCaseDescription;
 import de.neemann.digital.testing.TestCaseElement;
+import de.neemann.digital.testing.parser.ParserException;
 import de.neemann.gui.ErrorMessage;
 import junit.framework.TestCase;
 
@@ -61,7 +62,7 @@ import java.util.List;
 import static de.neemann.digital.draw.shapes.GenericShape.SIZE;
 import static de.neemann.digital.draw.shapes.GenericShape.SIZE2;
 import static de.neemann.digital.integration.GuiTester.getBaseContainer;
-import static de.neemann.digital.testing.TestCaseElement.TESTDATA;
+import static de.neemann.digital.core.element.Keys.TESTDATA;
 
 /**
  * These tests are excluded from the maven build because gui tests are sometimes fragile.
@@ -451,7 +452,7 @@ public class TestInGUI extends TestCase {
     public void testTestEditor() {
         new GuiTester("dig/manualError/11_editTest.dig")
                 .delay(300)
-                .add(new SetMouseToElement((v) -> v.equalsDescription(TestCaseElement.TESTCASEDESCRIPTION)))
+                .add(new SetMouseToElement((v) -> v.equalsDescription(TestCaseElement.DESCRIPTION)))
                 .mouseClick(InputEvent.BUTTON3_DOWN_MASK)
                 .delay(300)
                 .type("testIdentzz")
@@ -808,7 +809,7 @@ public class TestInGUI extends TestCase {
                 .mouseClick(InputEvent.BUTTON1_DOWN_MASK)
                 .delay(500)
                 .type("0")
-                .press("TAB", 5)
+                .press("TAB", 8)
                 .press("SPACE", "ENTER")
                 .delay(500)
                 .add(new CheckOutputValue(8))
@@ -1375,10 +1376,14 @@ public class TestInGUI extends TestCase {
 
         @Override
         public void checkWindow(GuiTester gt, Main main) {
-            main.getCircuitComponent().getCircuit().add(
-                    new VisualElement(TestCaseElement.TESTCASEDESCRIPTION.getName())
-                            .setAttribute(TESTDATA, new TestCaseDescription(testdata))
-                            .setShapeFactory(main.getCircuitComponent().getLibrary().getShapeFactory()));
+            try {
+                main.getCircuitComponent().getCircuit().add(
+                        new VisualElement(TestCaseElement.DESCRIPTION.getName())
+                                .setAttribute(TESTDATA, new TestCaseDescription(testdata))
+                                .setShapeFactory(main.getCircuitComponent().getLibrary().getShapeFactory()));
+            } catch (IOException | ParserException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

@@ -22,29 +22,20 @@ import de.neemann.digital.lang.Lang;
 public class TextShape implements Shape {
     private final String text;
     private final int fontSize;
-    private Orientation orientation;
+    private final Orientation orientation;
 
     /**
-     * Create a new instance
+     * Creates a new instance
      *
      * @param attr    attributes
      * @param inputs  the inputs
      * @param outputs the outputs
      */
     public TextShape(ElementAttributes attr, PinDescriptions inputs, PinDescriptions outputs) {
-        String text = attr.get(Keys.DESCRIPTION);
-
-        if (text.length() == 0) { // ToDo: used to be compatible with old files. Can be removed in the future
-            text = attr.getLabel();
-            if (text.length() > 0) {
-                attr.set(Keys.DESCRIPTION, text);
-                attr.set(Keys.LABEL, "");
-            }
-        }
-
-        if (text.length() == 0)
+        String text = Lang.evalMultilingualContent(attr.get(Keys.DESCRIPTION));
+        if (text.isEmpty())
             text = Lang.get("elem_Text");
-        this.text = Lang.evalMultilingualContent(text);
+        this.text = text;
 
         fontSize = attr.get(Keys.FONT_SIZE);
         orientation = attr.get(Keys.TEXT_ORIENTATION);
@@ -62,7 +53,6 @@ public class TextShape implements Shape {
 
     @Override
     public void drawTo(Graphic graphic, Style highLight) {
-
         StringBuilder sb = new StringBuilder();
         Style style = Style.NORMAL.deriveFontStyle(fontSize, true);
         Vector pos = new Vector(0, 0);

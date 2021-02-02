@@ -70,6 +70,14 @@
           <string>Bits</string>
           <int>20</int>
         </entry>
+        <entry>
+          <string>fixedPoint</string>
+          <int>14</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>fixedSigned</intFormat>
+        </entry>
       </elementAttributes>
       <pos x="520" y="220"/>
     </visualElement>
@@ -88,6 +96,14 @@
         <entry>
           <string>Bits</string>
           <int>20</int>
+        </entry>
+        <entry>
+          <string>fixedPoint</string>
+          <int>14</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>fixedSigned</intFormat>
         </entry>
       </elementAttributes>
       <pos x="520" y="340"/>

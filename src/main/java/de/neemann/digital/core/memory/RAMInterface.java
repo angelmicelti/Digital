@@ -7,6 +7,7 @@ package de.neemann.digital.core.memory;
 
 import de.neemann.digital.core.IntFormat;
 import de.neemann.digital.core.stats.Countable;
+import de.neemann.digital.core.ValueFormatter;
 
 /**
  * Interface to get access to the rams data.
@@ -30,7 +31,7 @@ public interface RAMInterface extends ProgramMemory, Countable {
     /**
      * @return the integer format to be used to visualize the values
      */
-    default IntFormat getIntFormat() {
-        return IntFormat.hex;
+    default ValueFormatter getValueFormatter() {
+        return IntFormat.HEX_FORMATTER;
     }
 }

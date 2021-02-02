@@ -142,6 +142,15 @@ public final class Bits {
         if (str.length() == 0)
             return 0;
 
+        if (str.indexOf(':') >= 0)
+            return decodeFixed(str);
+        if (str.indexOf('.') > -1) {
+            if (str.endsWith("d") || str.endsWith("D"))
+                return Double.doubleToLongBits(Double.parseDouble(str.substring(0, str.length() - 1)));
+            else
+                return Float.floatToIntBits(Float.parseFloat(str));
+        }
+
         int p = 0;
 
         boolean neg = false;
@@ -217,6 +226,17 @@ public final class Bits {
             p++;
         }
         return val;
+    }
+
+    private static long decodeFixed(String str) throws NumberFormatException {
+        int p = str.indexOf(':');
+        try {
+            int frac = Math.abs(Integer.parseInt(str.substring(p + 1)));
+            double floating = Double.parseDouble(str.substring(0, p));
+            return Math.round(floating * (1L << frac));
+        } catch (java.lang.NumberFormatException e) {
+            throw new NumberFormatException(str, 0);
+        }
     }
 
     /**

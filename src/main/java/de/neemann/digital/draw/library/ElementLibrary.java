@@ -27,6 +27,7 @@ import de.neemann.digital.draw.elements.Tunnel;
 import de.neemann.digital.draw.shapes.ShapeFactory;
 import de.neemann.digital.gui.Settings;
 import de.neemann.digital.gui.components.data.DummyElement;
+import de.neemann.digital.gui.components.data.ScopeTrigger;
 import de.neemann.digital.gui.components.graphics.GraphicCard;
 import de.neemann.digital.gui.components.graphics.LedMatrix;
 import de.neemann.digital.gui.components.graphics.VGA;
@@ -88,9 +89,9 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
     private final HashSet<String> isProgrammable = new HashSet<>();
     private final ArrayList<LibraryListener> listeners = new ArrayList<>();
     private final LibraryNode root;
+    private final ElementLibraryFolder custom;
     private JarComponentManager jarComponentManager;
     private ShapeFactory shapeFactory;
-    private ElementLibraryFolder custom;
     private File rootLibraryPath;
     private Exception exception;
     private long lastRescanTime;
@@ -130,6 +131,7 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(DummyElement.TEXTDESCRIPTION)
                         .add(Probe.DESCRIPTION)
                         .add(DummyElement.DATADESCRIPTION)
+                        .add(ScopeTrigger.DESCRIPTION)
                         .add(new LibraryNode(Lang.get("lib_displays"))
                                 .add(RGBLED.DESCRIPTION)
                                 .add(Out.POLARITYAWARELEDDESCRIPTION)
@@ -162,7 +164,8 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(DriverInvSel.DESCRIPTION)
                         .add(Delay.DESCRIPTION)
                         .add(PullUp.DESCRIPTION)
-                        .add(PullDown.DESCRIPTION))
+                        .add(PullDown.DESCRIPTION)
+                        .add(NotConnected.DESCRIPTION))
                 .add(new LibraryNode(Lang.get("lib_mux"))
                         .add(Multiplexer.DESCRIPTION)
                         .add(Demultiplexer.DESCRIPTION)
@@ -192,8 +195,10 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                                 .add(EEPROMDualPort.DESCRIPTION))
                         .add(Register.DESCRIPTION)
                         .add(ROM.DESCRIPTION)
+                        .add(ROMDualPort.DESCRIPTION)
                         .add(Counter.DESCRIPTION)
-                        .add(CounterPreset.DESCRIPTION))
+                        .add(CounterPreset.DESCRIPTION)
+                        .add(PRNG.DESCRIPTION))
                 .add(new LibraryNode(Lang.get("lib_arithmetic"))
                         .add(Add.DESCRIPTION)
                         .add(Sub.DESCRIPTION)
@@ -219,7 +224,9 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(FGNFET.DESCRIPTION)
                         .add(TransGate.DESCRIPTION))
                 .add(new LibraryNode(Lang.get("lib_misc"))
-                        .add(TestCaseElement.TESTCASEDESCRIPTION)
+                        .add(TestCaseElement.DESCRIPTION)
+                        .add(GenericInitCode.DESCRIPTION)
+                        .add(GenericCode.DESCRIPTION)
                         .add(DummyElement.RECTDESCRIPTION)
                         .add(PowerSupply.DESCRIPTION)
                         .add(BusSplitter.DESCRIPTION)
@@ -334,9 +341,7 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
         this.shapeFactory = shapeFactory;
     }
 
-    /**
-     * @return the shape factory
-     */
+    @Override
     public ShapeFactory getShapeFactory() {
         return shapeFactory;
     }
@@ -615,12 +620,12 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
      *
      * @param file    the file
      * @param circuit the circuit
-     * @param library the used library
+     * @param library the library
      * @return the type description
      * @throws PinException PinException
      */
     public static ElementTypeDescriptionCustom createCustomDescription(File file, Circuit circuit, ElementLibrary library) throws PinException {
-        ElementTypeDescriptionCustom d = new ElementTypeDescriptionCustom(file, circuit);
+        ElementTypeDescriptionCustom d = new ElementTypeDescriptionCustom(file, circuit, library);
         d.setElementFactory(attributes -> new CustomElement(d));
         return d;
     }

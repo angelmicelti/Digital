@@ -7,6 +7,7 @@ package de.neemann.digital.data;
 
 import de.neemann.digital.core.IntFormat;
 import de.neemann.digital.core.Observable;
+import de.neemann.digital.core.ValueFormatter;
 import de.neemann.digital.testing.parser.TestRow;
 
 import java.io.*;
@@ -140,10 +141,20 @@ public class ValueTable extends Observable implements Iterable<TestRow> {
      * @return the value stored at the given position
      */
     public Value getTableValue(int rowIndex, int columnIndex) {
+        return getTableRow(rowIndex).getValue(columnIndex);
+    }
+
+    /**
+     * Returns a table row
+     *
+     * @param rowIndex the index of the table row
+     * @return the table row
+     */
+    public TestRow getTableRow(int rowIndex) {
         if (tableRowIndex == null)
-            return values.get(rowIndex).getValue(columnIndex);
+            return values.get(rowIndex);
         else
-            return values.get(tableRowIndex.get(rowIndex)).getValue(columnIndex);
+            return values.get(tableRowIndex.get(rowIndex));
     }
 
     /**
@@ -296,7 +307,7 @@ public class ValueTable extends Observable implements Iterable<TestRow> {
      */
     public static final class ColumnInfo {
         private final int bits;
-        private final IntFormat format;
+        private final ValueFormatter format;
 
         /**
          * Creates a new instance
@@ -304,11 +315,11 @@ public class ValueTable extends Observable implements Iterable<TestRow> {
          * @param format the format to use
          * @param bits   the number of bits to output
          */
-        public ColumnInfo(IntFormat format, int bits) {
+        public ColumnInfo(ValueFormatter format, int bits) {
             if (format == null)
-                format = IntFormat.def;
-            if (format.equals(IntFormat.def) && (bits > 3))
-                format = IntFormat.hex;
+                format = IntFormat.HEX_FORMATTER;
+            else if (format.equals(IntFormat.DEFAULT_FORMATTER) && (bits > 3))
+                format = IntFormat.HEX_FORMATTER;
             this.format = format;
             this.bits = bits;
         }

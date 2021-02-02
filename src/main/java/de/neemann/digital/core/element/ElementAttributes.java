@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.core.element;
 
+import de.neemann.digital.core.ValueFormatter;
 import de.neemann.digital.hdl.hgs.HGSMap;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class ElementAttributes implements HGSMap {
     private HashMap<String, Object> attributes;
     private transient ArrayList<AttributeListener> listeners;
+    private transient HashMap<String, Object> cache;
 
     /**
      * Creates a new instance
@@ -161,6 +163,13 @@ public class ElementAttributes implements HGSMap {
     }
 
     /**
+     * @return the int number format
+     */
+    public ValueFormatter getValueFormatter() {
+        return get(Keys.INT_FORMAT).createFormatter(this);
+    }
+
+    /**
      * Sets the bit count to this map.
      * Shorthand for set(AttributeKey.BITS, bits);
      *
@@ -292,5 +301,41 @@ public class ElementAttributes implements HGSMap {
                 return attributes.get(key);
         } else
             return get(k);
+    }
+
+    /**
+     * Adds a value to the instance specific cache
+     *
+     * @param key   key
+     * @param value value
+     */
+    public void putToCache(String key, Object value) {
+        if (cache == null)
+            cache = new HashMap<>();
+        cache.put(key, value);
+    }
+
+    /**
+     * Requests a value from the cache
+     *
+     * @param key the key
+     * @return the value
+     */
+    public Object getFromCache(String key) {
+        if (cache == null)
+            return null;
+        return cache.get(key);
+    }
+
+    /**
+     * Removes an entry from the cache.
+     *
+     * @param key the key to remove
+     * @return the previous value associated with key, or null if there was no mapping for key.
+     */
+    public Object removeFromCache(String key) {
+        if (cache == null)
+            return null;
+        return cache.remove(key);
     }
 }

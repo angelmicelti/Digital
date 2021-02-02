@@ -5,153 +5,226 @@
  */
 package de.neemann.digital.core;
 
+import de.neemann.digital.core.element.ElementAttributes;
+import de.neemann.digital.core.element.Keys;
+
 /**
- *
+ * The available number formats
  */
 public enum IntFormat {
     /**
      * the default format
      */
-    def,
+    def(ValueFormatterDefault.INSTANCE),
     /**
      * decimal
      */
-    dec,
+    dec(new ValueFormatterDecimal(false)),
     /**
      * decimal signed
      */
-    decSigned,
+    decSigned(new ValueFormatterDecimal(true)),
     /**
-     * hexadecimal
+     * hex
      */
-    hex,
+    hex(ValueFormatterHex.INSTANCE),
     /**
      * binary
      */
-    bin,
+    bin(new ValueFormatterBinary()),
     /**
      * octal
      */
-    oct,
+    oct(new ValueFormatterOctal()),
     /**
-     * ascii format
+     * ascii
      */
-    ascii;
+    ascii(new ValueFormatterAscii()),
+    /**
+     * fixed point
+     */
+    fixed(attributes -> new ValueFormatterFixedPoint(attributes, false)),
+    /**
+     * fixed point signed
+     */
+    fixedSigned(attributes -> new ValueFormatterFixedPoint(attributes, true)),
+    /**
+     * floating point
+     */
+    floating(new ValueFormatterFloat());
 
     /**
-     * Formats the value.
-     * Uses this method to create a string which is only shown to the user.
-     * If the user is able to edit the string use {@link IntFormat#formatToEdit(Value)} instead.
-     *
-     * @param inValue the value to format
-     * @return the formatted value as a string
+     * The default formatter
      */
-    public String formatToView(Value inValue) {
-        if (inValue.isHighZ())
-            return inValue.toString();
+    public static final ValueFormatter DEFAULT_FORMATTER = ValueFormatterDefault.INSTANCE;
+    /**
+     * The hexadecimal formatter
+     */
+    public static final ValueFormatter HEX_FORMATTER = ValueFormatterHex.INSTANCE;
 
-        if (this.equals(def))
-            return toShortHex(inValue.getValue(), false);
+    private final Factory factory;
+    private final boolean dependsOnAttributes;
 
-        return formatToEdit(inValue);
+    IntFormat(ValueFormatter instance) {
+        this.factory = attributes -> instance;
+        this.dependsOnAttributes = false;
+    }
+
+    IntFormat(Factory factory) {
+        this.factory = factory;
+        this.dependsOnAttributes = true;
     }
 
     /**
-     * Formats the value.
-     * Creates a string which can be parsed by {@link Bits#decode(String)}
+     * Creates a formatter which is able to format Values
      *
-     * @param inValue the value to format
-     * @return the formatted value as a string
-     * @see Bits#decode(String)
+     * @param attributes the elements attributes
+     * @return the created {@link ValueFormatter}
      */
-    public String formatToEdit(Value inValue) {
-        if (inValue.isHighZ())
-            return "Z";
-
-        switch (this) {
-            case dec:
-                return Long.toString(inValue.getValue());
-            case decSigned:
-                return Long.toString(inValue.getValueSigned());
-            case hex:
-                return "0x" + toHex(inValue);
-            case bin:
-                return "0b" + toBin(inValue);
-            case oct:
-                return "0" + toOct(inValue);
-            case ascii:
-                return "'" + (char) inValue.getValue() + "'";
-            default:
-                final long value = inValue.getValue();
-                if (value >= 0 && value < 10)
-                    return Long.toString(value);
-                else
-                    return "0x" + toShortHex(value, true);
-        }
+    public ValueFormatter createFormatter(ElementAttributes attributes) {
+        return factory.create(attributes);
     }
 
     /**
-     * Return the number of characters required to format a number with the given bit width.
-     *
-     * @param bits the number of bits
-     * @return the number of characters required
+     * @return true if this type depends on elements attributes
      */
-    public int strLen(int bits) {
-        switch (this) {
-            case dec:
-                return decStrLen(bits);
-            case decSigned:
-                return decStrLen(bits - 1) + 1;
-            case hex:
-                return (bits - 1) / 4 + 3;
-            case bin:
-                return bits + 2;
-            case oct:
-                return (bits - 1) / 3 + 3;
-            case ascii:
-                return 3;
-            default:
-                return (bits - 1) / 4 + 3;
-        }
+    public boolean dependsOnAttributes() {
+        return dependsOnAttributes;
     }
 
-    private int decStrLen(int bits) {
-        if (bits == 64)
-            return 20;
-        else if (bits == 63) {
-            return 19;
-        } else
-            return (int) Math.ceil(Math.log10(1L << bits));
+    private interface Factory {
+        ValueFormatter create(ElementAttributes attributes);
     }
 
     private static final char[] DIGITS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-    private static String toHex(Value inValue) {
-        final int bits = inValue.getBits();
-        final int numChars = (bits - 1) / 4 + 1;
+    /**
+     * The default value formatter
+     */
+    private static final class ValueFormatterDefault implements ValueFormatter {
+        private static final ValueFormatter INSTANCE = new ValueFormatterDefault();
 
-        StringBuilder sb = new StringBuilder(numChars);
-        final long value = inValue.getValue();
-        for (int i = numChars - 1; i >= 0; i--) {
-            int c = (int) ((value >> (i * 4)) & 0xf);
-            sb.append(DIGITS[c]);
+        @Override
+        public String formatToView(Value inValue) {
+            if (inValue.isHighZ())
+                return inValue.toString();
+            else
+                return toShortHex(inValue.getValue(), false);
         }
-        return sb.toString();
+
+        @Override
+        public String formatToEdit(Value inValue) {
+            if (inValue.isHighZ())
+                return "Z";
+
+            final long value = inValue.getValue();
+            if (value >= 0 && value < 10)
+                return Long.toString(value);
+            else
+                return "0x" + toShortHex(value, true);
+        }
+
+        @Override
+        public int strLen(int bits) {
+            return (bits - 1) / 4 + 3;
+        }
+
+        @Override
+        public boolean isSuitedForAddresses() {
+            return false; // difficult to read in a table
+        }
+
+        @Override
+        public long dragValue(long initial, int bits, double inc) {
+            return dragValueSigned(initial, bits, inc, false);
+        }
     }
 
-    private static String toOct(Value inValue) {
-        final int bits = inValue.getBits();
-        final int numChars = (bits - 1) / 3 + 1;
+    private static long dragValueSigned(long initial, int bits, double inc, boolean signed) {
+        long max;
+        long min;
+        if (signed) {
+            long mask = Bits.mask(bits);
+            long signedFlag = Bits.signedFlagMask(bits);
+            if ((initial & signedFlag) != 0) initial |= ~mask;
 
-        StringBuilder sb = new StringBuilder(numChars);
-        final long value = inValue.getValue();
-        for (int i = numChars - 1; i >= 0; i--) {
-            int c = (int) ((value >> (i * 3)) & 0x7);
-            sb.append(DIGITS[c]);
+            max = mask >>> 1;
+            min = -max - 1;
+        } else {
+            max = Bits.mask(bits);
+            min = 0;
         }
-        return sb.toString();
+        return Math.max(min, Math.min(max, initial + Math.round(max * inc)));
     }
 
+    /**
+     * Base class of all formatters where the string to edit and the string to display are the same.
+     */
+    private static abstract class ValueFormatterViewEdit implements ValueFormatter {
+        private final boolean suitedForAddresses;
+
+        private ValueFormatterViewEdit(boolean suitedForAddresses) {
+            this.suitedForAddresses = suitedForAddresses;
+        }
+
+        @Override
+        public String formatToView(Value inValue) {
+            if (inValue.isHighZ())
+                return inValue.toString();
+            else
+                return format(inValue);
+        }
+
+        @Override
+        public String formatToEdit(Value inValue) {
+            if (inValue.isHighZ())
+                return "Z";
+            else
+                return format(inValue);
+        }
+
+        @Override
+        public boolean isSuitedForAddresses() {
+            return suitedForAddresses;
+        }
+
+        protected abstract String format(Value value);
+
+        @Override
+        public long dragValue(long initial, int bits, double inc) {
+            return dragValueSigned(initial, bits, inc, false);
+        }
+    }
+
+    /**
+     * the hexadecimal formatter
+     */
+    private static final class ValueFormatterHex extends ValueFormatterViewEdit {
+        private static final ValueFormatterHex INSTANCE = new ValueFormatterHex();
+
+        private ValueFormatterHex() {
+            super(true);
+        }
+
+        @Override
+        protected String format(Value inValue) {
+            final int bits = inValue.getBits();
+            final int numChars = (bits - 1) / 4 + 1;
+
+            StringBuilder sb = new StringBuilder("0x");
+            final long value = inValue.getValue();
+            for (int i = numChars - 1; i >= 0; i--) {
+                int c = (int) ((value >> (i * 4)) & 0xf);
+                sb.append(DIGITS[c]);
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public int strLen(int bits) {
+            return (bits - 1) / 4 + 3;
+        }
+    }
 
     /**
      * Creates a short hex representation of the given value.
@@ -189,25 +262,271 @@ public enum IntFormat {
             return "0x" + new String(data, p, BUF - p);
     }
 
-    private static String toBin(Value inValue) {
-        final int bits = inValue.getBits();
-        char[] data = new char[bits];
-        final long value = inValue.getValue();
-        long mask = 1;
-        for (int i = bits - 1; i >= 0; i--) {
-            if ((value & mask) != 0)
-                data[i] = '1';
-            else
-                data[i] = '0';
-            mask <<= 1;
+    /**
+     * the octal formatter
+     */
+    private static final class ValueFormatterOctal extends ValueFormatterViewEdit {
+
+        private ValueFormatterOctal() {
+            super(true);
         }
-        return new String(data);
+
+        @Override
+        public int strLen(int bits) {
+            return (bits - 1) / 3 + 3;
+        }
+
+        @Override
+        protected String format(Value inValue) {
+            final int bits = inValue.getBits();
+            final int numChars = (bits - 1) / 3 + 1;
+
+            StringBuilder sb = new StringBuilder("0");
+            final long value = inValue.getValue();
+            for (int i = numChars - 1; i >= 0; i--) {
+                int c = (int) ((value >> (i * 3)) & 0x7);
+                sb.append(DIGITS[c]);
+            }
+            return sb.toString();
+        }
     }
 
     /**
-     * @return true if the format supports signed values
+     * the binary formatter
      */
-    public boolean isSigned() {
-        return this.equals(decSigned);
+    private static final class ValueFormatterBinary extends ValueFormatterViewEdit {
+
+        private ValueFormatterBinary() {
+            super(false); // column becomes to wide
+        }
+
+        @Override
+        public int strLen(int bits) {
+            return bits + 2;
+        }
+
+        @Override
+        protected String format(Value inValue) {
+            final int bits = inValue.getBits();
+            char[] data = new char[bits];
+            final long value = inValue.getValue();
+            long mask = 1;
+            for (int i = bits - 1; i >= 0; i--) {
+                if ((value & mask) != 0)
+                    data[i] = '1';
+                else
+                    data[i] = '0';
+                mask <<= 1;
+            }
+            return "0b" + new String(data);
+        }
     }
+
+    /**
+     * The ascii formatter
+     */
+    private static final class ValueFormatterAscii extends ValueFormatterViewEdit {
+
+        private ValueFormatterAscii() {
+            super(false); // does not represent all values
+        }
+
+        @Override
+        public int strLen(int bits) {
+            return 3;
+        }
+
+        @Override
+        protected String format(Value value) {
+            return "'" + ((char) value.getValue()) + "'";
+        }
+    }
+
+    /**
+     * The decimal value formatter
+     */
+    private static final class ValueFormatterDecimal extends ValueFormatterViewEdit {
+        private final boolean signed;
+
+        private ValueFormatterDecimal(boolean signed) {
+            super(true);
+            this.signed = signed;
+        }
+
+        @Override
+        public int strLen(int bits) {
+            if (signed)
+                return decStrLen(bits - 1) + 1;
+            else
+                return decStrLen(bits);
+        }
+
+        @Override
+        protected String format(Value value) {
+            if (signed)
+                return Long.toString(value.getValueSigned());
+            else
+                return Long.toString(value.getValue());
+        }
+
+        @Override
+        public long dragValue(long initial, int bits, double inc) {
+            return dragValueSigned(initial, bits, inc, signed);
+        }
+    }
+
+    private static int decStrLen(int bits) {
+        if (bits == 64)
+            return 20;
+        else if (bits == 63) {
+            return 19;
+        } else
+            return (int) Math.ceil(Math.log10(1L << bits));
+    }
+
+
+    /**
+     * Fixed point formatter
+     */
+    private static final class ValueFormatterFixedPoint implements ValueFormatter {
+        private static final int[] TABLE = new int[]{
+                0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14, 15, 16, 17, 17,
+                18, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21,
+                21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+                21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22};
+
+        private final int fixedPoint;
+        private final boolean signed;
+        private final double divisor;
+
+        /**
+         * Creates a new generic instance
+         *
+         * @param attr   the defining elements attributes
+         * @param signed signed
+         */
+        private ValueFormatterFixedPoint(ElementAttributes attr, boolean signed) {
+            fixedPoint = attr.get(Keys.FIXED_POINT);
+            divisor = Bits.up(1, fixedPoint);
+            this.signed = signed;
+        }
+
+        @Override
+        public String formatToView(Value inValue) {
+            if (inValue.isHighZ())
+                return inValue.toString();
+            return format(inValue);
+        }
+
+        @Override
+        public String formatToEdit(Value inValue) {
+            if (inValue.isHighZ())
+                return "Z";
+            return format(inValue) + ":" + fixedPoint;
+        }
+
+        @Override
+        public int strLen(int bits) {
+            int fp = fixedPoint;
+            if (fp >= TABLE.length) fp = TABLE.length - 1;
+            return decStrLen(Math.max(1, bits - fp)) + TABLE[fp];
+        }
+
+        @Override
+        public boolean isSuitedForAddresses() {
+            return false;
+        }
+
+        private String format(Value inValue) {
+            if (signed)
+                return Double.toString(inValue.getValueSigned() / divisor);
+            else
+                return Double.toString(inValue.getValue() / divisor);
+        }
+
+        @Override
+        public long dragValue(long initial, int bits, double inc) {
+            return dragValueSigned(initial, bits, inc, signed);
+        }
+    }
+
+    /**
+     * Floating point formatter
+     */
+    private static final class ValueFormatterFloat implements ValueFormatter {
+        private static final int SIZE32 = Float.toString((float) -Math.PI).length();
+        private static final int SIZE64 = Double.toString(-Math.PI).length();
+
+        @Override
+        public String formatToView(Value inValue) {
+            if (inValue.isHighZ())
+                return inValue.toString();
+
+            switch (inValue.getBits()) {
+                case 32:
+                    return Float.toString(Float.intBitsToFloat((int) inValue.getValue()));
+                case 64:
+                    return Double.toString(Double.longBitsToDouble(inValue.getValue()));
+                default:
+                    return HEX_FORMATTER.formatToView(inValue);
+            }
+        }
+
+        @Override
+        public String formatToEdit(Value inValue) {
+            if (inValue.isHighZ())
+                return "Z";
+
+            switch (inValue.getBits()) {
+                case 32:
+                    return Float.toString(Float.intBitsToFloat((int) inValue.getValue()));
+                case 64:
+                    return Double.longBitsToDouble(inValue.getValue()) + "d";
+                default:
+                    return HEX_FORMATTER.formatToEdit(inValue);
+            }
+        }
+
+        @Override
+        public int strLen(int bits) {
+            switch (bits) {
+                case 32:
+                    return SIZE32;
+                case 64:
+                    return SIZE64;
+                default:
+                    return HEX_FORMATTER.strLen(bits);
+            }
+        }
+
+        @Override
+        public boolean isSuitedForAddresses() {
+            return false;
+        }
+
+        @Override
+        public long dragValue(long initialInt, int bits, double inc) {
+            double initial;
+            if (bits == 32)
+                initial = Float.intBitsToFloat((int) initialInt);
+            else if (bits == 64)
+                initial = Double.longBitsToDouble(initialInt);
+            else
+                return HEX_FORMATTER.dragValue(initialInt, bits, inc);
+
+            if (!Double.isFinite(initial))
+                initial = 0;
+
+            double fac = Math.exp(Math.abs(inc) * 15) / 1000;
+            double delta = Math.abs(initial == 0 ? 1 : initial) * fac * Math.signum(inc);
+            double exp = Math.pow(10, Math.floor(Math.log10(Math.abs(delta))));
+            double val = Math.round((initial + delta) / exp) * exp;
+
+            if (bits == 32)
+                return Float.floatToIntBits((float) val);
+            else
+                return Double.doubleToLongBits(val);
+        }
+    }
+
 }

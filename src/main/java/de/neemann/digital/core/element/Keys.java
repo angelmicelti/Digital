@@ -20,6 +20,8 @@ import de.neemann.digital.draw.library.ElementLibrary;
 import de.neemann.digital.draw.model.InverterConfig;
 import de.neemann.digital.draw.shapes.CustomCircuitShapeType;
 import de.neemann.digital.draw.shapes.custom.CustomShapeDescription;
+import de.neemann.digital.gui.components.data.ScopeTrigger;
+import de.neemann.digital.testing.TestCaseDescription;
 import de.neemann.gui.Screen;
 import de.neemann.gui.language.Language;
 
@@ -465,8 +467,8 @@ public final class Keys {
     /**
      * The GUI expression string representation
      */
-    public static final Key<FormatToExpression> SETTINGS_EXPRESSION_FORMAT
-            = new Key<>("ExpressionFormat", FormatToExpression.FORMATTER_UNICODE);
+    public static final Key.KeyEnum<FormatToExpression> SETTINGS_EXPRESSION_FORMAT
+            = new Key.KeyEnum<>("ExpressionFormat", FormatToExpression.UNICODE, FormatToExpression.values(), true);
 
     /**
      * enables the grid
@@ -497,6 +499,17 @@ public final class Keys {
      */
     public static final Key<IntFormat> INT_FORMAT
             = new Key.KeyEnum<>("intFormat", IntFormat.def, IntFormat.values()).setSecondary();
+
+    /**
+     * fixed point fractional binary digits
+     */
+    public static final Key<Integer> FIXED_POINT
+            = new Key.KeyInteger("fixedPoint", 4)
+            .setMin(1)
+            .setMax(64)
+            .setDependsOn(INT_FORMAT, intFormat -> intFormat.equals(IntFormat.fixed) || intFormat.equals(IntFormat.fixedSigned))
+            .allowGroupEdit()
+            .setSecondary();
 
     /**
      * width of the terminal
@@ -829,7 +842,13 @@ public final class Keys {
      * Used to input statements to generify a circuit.
      */
     public static final Key<String> GENERIC =
-            new Key.LongString("generic").allowGroupEdit();
+            new Key.LongString("generic").setLineNumbers(true).allowGroupEdit();
+
+    /**
+     * Used to input statements to generify a circuit.
+     */
+    public static final Key<String> GENERICLARGE =
+            new Key.LongString("generic").setLineNumbers(true).setRows(20).allowGroupEdit();
 
     /**
      * Circuit is generic
@@ -868,5 +887,18 @@ public final class Keys {
      */
     public static final Key<Boolean> MIRROR =
             new Key<>("mirror", false).allowGroupEdit().setSecondary();
+
+    /**
+     * The test data
+     */
+    public static final Key<TestCaseDescription> TESTDATA =
+            new Key<>("Testdata", TestCaseDescription::new);
+
+    /**
+     * The scope trigger mode
+     */
+    public static final Key.KeyEnum<ScopeTrigger.Trigger> TRIGGER =
+            new Key.KeyEnum<>("trigger", ScopeTrigger.Trigger.both, ScopeTrigger.Trigger.values());
+
 
 }

@@ -45,7 +45,8 @@ These are the main features of Digital:
   and works just fine.
 - It is possible to use custom components which are implemented in Java and packed in a jar file. 
   See this [example](https://github.com/hneemann/digitalCustomComponents) for details.   
-- Simple remote TCP interface which e.g. allows an [assembler IDE](https://github.com/hneemann/Assembler) to control 
+- Simple remote [TCP interface](https://github.com/hneemann/Assembler/blob/master/src/main/java/de/neemann/assembler/gui/RemoteInterface.java) 
+  which e.g. allows an [assembler IDE](https://github.com/hneemann/Assembler) to control 
   the simulator.
 - Components can be described using VHDL or Verilog. The open source VHDL simulator [ghdl](http://ghdl.free.fr/)
   needs to be installed to simulate a VHDL defined component, and the open source Verilog simulator
@@ -96,9 +97,11 @@ If you want to know how to create the necessary files yourself, see
 
 ## Comments ##
 
-If you want to send a bug report or feature request please use the GitHub 
-[issue tracker](https://github.com/hneemann/Digital/issues/new). 
-This helps me to improve Digital, so do not hesitate.
+If you want to send a bug report or feature request please use the GitHub
+[issue tracker](https://github.com/hneemann/Digital/issues/new). This helps me to improve Digital, so do not hesitate.
+If you have general questions, you can also use the new
+GitHub [Discussions](https://github.com/hneemann/Digital/discussions)
+to ask your questions without creating an issue.
 
 It's also possible to send a private message to [digital-simulator@web.de](mailto:digital-simulator@web.de).
 

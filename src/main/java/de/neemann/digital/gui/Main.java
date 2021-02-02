@@ -5,11 +5,11 @@
  */
 package de.neemann.digital.gui;
 
+import de.neemann.digital.FileLocator;
 import de.neemann.digital.analyse.AnalyseException;
 import de.neemann.digital.analyse.ModelAnalyser;
 import de.neemann.digital.analyse.SubstituteLibrary;
 import de.neemann.digital.analyse.TruthTable;
-import de.neemann.digital.analyse.expression.format.FormatToExpression;
 import de.neemann.digital.core.*;
 import de.neemann.digital.core.element.ElementAttributes;
 import de.neemann.digital.core.element.Keys;
@@ -43,18 +43,17 @@ import de.neemann.digital.gui.components.testing.TestAllDialog;
 import de.neemann.digital.gui.components.testing.ValueTableDialog;
 import de.neemann.digital.gui.components.tree.LibraryTreeModel;
 import de.neemann.digital.gui.components.tree.SelectTree;
-import de.neemann.digital.gui.tutorial.InitialTutorial;
 import de.neemann.digital.gui.release.CheckForNewRelease;
 import de.neemann.digital.gui.remote.DigitalHandler;
 import de.neemann.digital.gui.remote.RemoteException;
 import de.neemann.digital.gui.remote.RemoteSever;
 import de.neemann.digital.gui.state.State;
 import de.neemann.digital.gui.state.StateManager;
+import de.neemann.digital.gui.tutorial.InitialTutorial;
 import de.neemann.digital.hdl.printer.CodePrinter;
 import de.neemann.digital.hdl.verilog2.VerilogGenerator;
 import de.neemann.digital.hdl.vhdl2.VHDLGenerator;
 import de.neemann.digital.lang.Lang;
-import de.neemann.digital.testing.TestCaseElement;
 import de.neemann.digital.testing.TestingDataException;
 import de.neemann.digital.toolchain.Configuration;
 import de.neemann.digital.undo.ChangedListener;
@@ -426,11 +425,23 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         toolBar.add(zoomOut.createJButtonNoText());
         toolBar.add(maximize.createJButtonNoText());
 
+        JMenu scaleMenu = new JMenu(Lang.get("menu_scale"));
+        for (int i = 0; i < 10; i++) {
+            int f = (20 + i * 20);
+            scaleMenu.add(new JMenuItem(new AbstractAction(f + "%") {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    getCircuitComponent().setScale(f / 100.0f);
+                }
+            }));
+        }
+
         JMenu view = new JMenu(Lang.get("menu_view"));
         menuBar.add(view);
         view.add(maximize.createJMenuItem());
         view.add(zoomOut.createJMenuItem());
         view.add(zoomIn.createJMenuItem());
+        view.add(scaleMenu);
         view.addSeparator();
         view.add(treeCheckBox);
         view.addSeparator();
@@ -684,6 +695,13 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     }
 
     /**
+     * @return the used library
+     */
+    public ElementLibrary getLibrary() {
+        return library;
+    }
+
+    /**
      * Creates the edit menu
      *
      * @param menuBar the menu bar
@@ -739,7 +757,6 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                                 .setDialogTitle(Lang.get("menu_editSettings"))
                                 .showDialog();
                 if (modified != null) {
-                    FormatToExpression.setDefaultFormat(modified.get(Keys.SETTINGS_EXPRESSION_FORMAT));
                     ColorScheme.updateCustomColorScheme(modified);
 
                     if (Settings.getInstance().requiresRestart(modified)) {
@@ -758,7 +775,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         ToolTipAction actualToDefault = new ToolTipAction(Lang.get("menu_actualToDefault")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                circuitComponent.actualToDefault();
+                circuitComponent.currentToDefault();
                 ensureModelIsStopped();
             }
         }.setToolTip(Lang.get("menu_actualToDefault_tt"));
@@ -1128,11 +1145,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
      */
     public void startTests() {
         try {
-            ArrayList<ValueTableDialog.TestSet> tsl = new ArrayList<>();
-            for (VisualElement el : circuitComponent.getCircuit().getTestCases())
-                tsl.add(new ValueTableDialog.TestSet(
-                        el.getElementAttributes().get(TestCaseElement.TESTDATA),
-                        el.getElementAttributes().getLabel()));
+            List<Circuit.TestCase> tsl = circuitComponent.getCircuit().getTestCases();
 
             if (tsl.isEmpty())
                 throw new TestingDataException(Lang.get("err_noTestData"));
@@ -1142,7 +1155,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                     .setVisible(true);
 
             ensureModelIsStopped();
-        } catch (NodeException | ElementNotFoundException | PinException | TestingDataException | RuntimeException e1) {
+        } catch (TestingDataException | RuntimeException e1) {
             showError(Lang.get("msg_runningTestError"), e1);
         }
     }
@@ -1345,7 +1358,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             model = modelCreator.createModel(true);
 
             time = System.currentTimeMillis() - time;
-            LOGGER.debug("model creation: " + time + " ms");
+            LOGGER.debug("model creation: " + time + " ms, " + model.getNodes().size() + " nodes");
 
             model.setWindowPosManager(windowPosManager);
 
@@ -1385,8 +1398,14 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             }
 
             circuitComponent.setModeAndReset(true, model);
+            if (circuitComponent.getCircuit().getAttributes().get(Keys.IS_GENERIC))
+                circuitComponent.setCopy(modelCreator.getCircuit());
 
-            modelCreator.connectToGui();
+            // Allows the model to modify the circuit
+            CircuitModifierPostClosed cmpc = new CircuitModifierPostClosed(
+                    modification -> SwingUtilities.invokeLater(() -> circuitComponent.modify(modification)));
+            modelCreator.connectToGui(cmpc);
+            model.addObserver(cmpc);
 
             handleKeyboardComponents();
 
@@ -1410,13 +1429,18 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             if (modelModifier != null)
                 modelModifier.preInit(model);
             else {
-                if (settings.get(Keys.PRELOAD_PROGRAM))
-                    new ProgramMemoryLoader(settings.get(Keys.PROGRAM_TO_PRELOAD)).preInit(model);
+                if (settings.get(Keys.PRELOAD_PROGRAM)) {
+                    File romHex = new FileLocator(settings.get(Keys.PROGRAM_TO_PRELOAD))
+                            .setupWithMain(this)
+                            .locate();
+                    new ProgramMemoryLoader(romHex)
+                            .preInit(model);
+                }
             }
 
             if (updateEvent == ModelEventType.MICROSTEP) {
                 checkMicroStepActions(model);
-                model.addObserver(new MicroStepObserver(model));
+                model.addObserver(new MicroStepObserver(model, modelCreator));
             } else if (updateEvent == ModelEventType.STEP) {
                 if (maxFrequency <= 50)
                     model.addObserver(new FullStepObserver(model));
@@ -1588,6 +1612,26 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         }
     }
 
+    /**
+     * Starts the simulation and allows to advance the model to a certain state.
+     *
+     * @param advanceSimulator needs to be implemented to advance the model
+     */
+    public void startSimulation(AdvanceSimulator advanceSimulator) {
+        SwingUtilities.invokeLater(() -> {
+            runModelState.enter(false, null);
+            SwingUtilities.invokeLater(() -> {
+                if (model != null && model.isRunning()) {
+                    try {
+                        advanceSimulator.advance(model);
+                        circuitComponent.graphicHasChanged();
+                    } catch (Exception e) {
+                        showError(Lang.get("msg_errorSettingModelToTestCase"), e);
+                    }
+                }
+            });
+        });
+    }
 
     @Override
     public void hasChanged() {
@@ -1670,10 +1714,10 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     /**
      * Updates the graphic at every 100ms
      */
-    private class FastObserver implements ModelStateObserverTyped {
+    private final class FastObserver implements ModelStateObserverTyped {
         private final Timer timer;
 
-        FastObserver() {
+        private FastObserver() {
             timer = new Timer(100, actionEvent -> circuitComponent.graphicHasChanged());
         }
 
@@ -1700,11 +1744,13 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     /**
      * Updates the graphic at every micro step
      */
-    private class MicroStepObserver implements ModelStateObserverTyped {
+    private final class MicroStepObserver implements ModelStateObserverTyped {
         private final Model model;
+        private final ModelCreator modelCreator;
 
-        MicroStepObserver(Model model) {
+        private MicroStepObserver(Model model, ModelCreator modelCreator) {
             this.model = model;
+            this.modelCreator = modelCreator;
         }
 
         @Override
@@ -1933,7 +1979,6 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         }
         ToolTipManager.sharedInstance().setDismissDelay(10000);
         URL.setURLStreamHandlerFactory(ElementHelpDialog.createURLStreamHandlerFactory());
-        FormatToExpression.setDefaultFormat(Settings.getInstance().get(Keys.SETTINGS_EXPRESSION_FORMAT));
 
         if (Screen.isMac()) {
             setMacCopyPasteTo(UIManager.get("TextField.focusInputMap"));
@@ -2109,5 +2154,18 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 }
             }
         }
+    }
+
+    /**
+     * Allows to start the simulation and advance the model to a certain state.
+     */
+    public interface AdvanceSimulator {
+        /**
+         * Advances the model to a certain state
+         *
+         * @param model the model
+         * @throws Exception Exception
+         */
+        void advance(Model model) throws Exception;
     }
 }
