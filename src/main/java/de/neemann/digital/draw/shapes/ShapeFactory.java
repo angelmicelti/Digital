@@ -20,9 +20,7 @@ import de.neemann.digital.core.wiring.*;
 import de.neemann.digital.draw.elements.PinException;
 import de.neemann.digital.draw.elements.Tunnel;
 import de.neemann.digital.draw.graphics.Style;
-import de.neemann.digital.draw.library.ElementLibrary;
-import de.neemann.digital.draw.library.ElementTypeDescriptionCustom;
-import de.neemann.digital.draw.library.JarComponentManager;
+import de.neemann.digital.draw.library.*;
 import de.neemann.digital.draw.shapes.custom.CustomShape;
 import de.neemann.digital.draw.shapes.custom.CustomShapeDescription;
 import de.neemann.digital.draw.shapes.ieee.IEEEAndShape;
@@ -30,6 +28,7 @@ import de.neemann.digital.draw.shapes.ieee.IEEENotShape;
 import de.neemann.digital.draw.shapes.ieee.IEEEOrShape;
 import de.neemann.digital.draw.shapes.ieee.IEEEXOrShape;
 import de.neemann.digital.gui.components.data.DummyElement;
+import de.neemann.digital.gui.components.data.ScopeTrigger;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.testing.TestCaseElement;
 
@@ -104,6 +103,7 @@ public final class ShapeFactory {
         map.put(Const.DESCRIPTION.getName(), ConstShape::new);
         map.put(Ground.DESCRIPTION.getName(), GroundShape::new);
         map.put(VDD.DESCRIPTION.getName(), VDDShape::new);
+        map.put(NotConnected.DESCRIPTION.getName(), NotConnectedShape::new);
         map.put(Out.DESCRIPTION.getName(), OutputShape::new);
         map.put(Out.LEDDESCRIPTION.getName(), LEDShape::new);
         map.put(LightBulb.DESCRIPTION.getName(), LightBulbShape::new);
@@ -117,6 +117,7 @@ public final class ShapeFactory {
         map.put(Out.SEVENHEXDESCRIPTION.getName(), SevenSegHexShape::new);
         map.put(Out.SIXTEENDESCRIPTION.getName(), SixteenShape::new);
         map.put(DummyElement.DATADESCRIPTION.getName(), DataShape::new);
+        map.put(ScopeTrigger.DESCRIPTION.getName(), ScopeShape::new);
         map.put(RotEncoder.DESCRIPTION.getName(), RotEncoderShape::new);
         map.put(StepperMotorUnipolar.DESCRIPTION.getName(), StepperMotorShape::new);
         map.put(StepperMotorBipolar.DESCRIPTION.getName(), StepperMotorShape::new);
@@ -157,7 +158,9 @@ public final class ShapeFactory {
 
         map.put(DummyElement.TEXTDESCRIPTION.getName(), TextShape::new);
         map.put(DummyElement.RECTDESCRIPTION.getName(), RectShape::new);
-        map.put(TestCaseElement.TESTCASEDESCRIPTION.getName(), TestCaseShape::new);
+        map.put(TestCaseElement.DESCRIPTION.getName(), TestCaseShape::new);
+        map.put(GenericInitCode.DESCRIPTION.getName(), GenericInitCodeShape::new);
+        map.put(GenericCode.DESCRIPTION.getName(), GenericCodeShape::new);
         map.put(AsyncSeq.DESCRIPTION.getName(), AsyncClockShape::new);
 
         map.put(Diode.DESCRIPTION.getName(), DiodeShape::new);

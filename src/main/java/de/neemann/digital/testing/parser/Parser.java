@@ -5,7 +5,8 @@
  */
 package de.neemann.digital.testing.parser;
 
-import de.neemann.digital.core.Bits;
+import de.neemann.digital.core.*;
+import de.neemann.digital.core.memory.DataField;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.data.Value;
 import de.neemann.digital.testing.parser.functions.Function;
@@ -32,6 +33,8 @@ import java.util.HashMap;
 public class Parser {
 
     private final ArrayList<String> names;
+    private final ModelInitializer modelInit;
+    private final ArrayList<VirtualSignal> virtualSignals;
     private final Tokenizer tok;
     private final HashMap<String, Function> functions = new HashMap<>();
     private LineEmitter emitter;
@@ -46,6 +49,8 @@ public class Parser {
         functions.put("random", new Random());
         functions.put("ite", new IfThenElse());
         names = new ArrayList<>();
+        virtualSignals = new ArrayList<>();
+        modelInit = new ModelInitializer();
         tok = new Tokenizer(new BufferedReader(new StringReader(data)));
     }
 
@@ -104,6 +109,48 @@ public class Parser {
                 case NUMBER:
                     list.add(parseSingleRow());
                     break;
+                case INIT:
+                    tok.consume();
+                    expect(Tokenizer.Token.IDENT);
+                    final String sName = tok.getIdent();
+                    expect(Tokenizer.Token.EQUAL);
+                    int sign = 1;
+                    if (tok.peek() == Tokenizer.Token.SUB) {
+                        tok.consume();
+                        sign = -1;
+                    }
+                    expect(Tokenizer.Token.NUMBER);
+                    long n = convToLong(tok.getIdent());
+                    expect(Tokenizer.Token.SEMICOLON);
+                    modelInit.initSignal(sName, sign * n);
+                    break;
+                case MEMORY:
+                    tok.consume();
+                    expect(Tokenizer.Token.IDENT);
+                    final String ramName = tok.getIdent();
+                    expect(Tokenizer.Token.OPEN);
+                    expect(Tokenizer.Token.NUMBER);
+                    long addr = convToLong(tok.getIdent());
+                    expect(Tokenizer.Token.CLOSE);
+                    expect(Tokenizer.Token.EQUAL);
+                    expect(Tokenizer.Token.NUMBER);
+                    long val = convToLong(tok.getIdent());
+                    expect(Tokenizer.Token.SEMICOLON);
+                    modelInit.initMemory(ramName, (int) addr, val);
+                    break;
+                case PROGRAM:
+                    tok.consume();
+                    modelInit.initProgramMemory(parseData());
+                    break;
+                case DECLARE:
+                    tok.consume();
+                    expect(Tokenizer.Token.IDENT);
+                    final String sigName = tok.getIdent();
+                    expect(Tokenizer.Token.EQUAL);
+                    final Expression sigExpression = parseExpression();
+                    expect(Tokenizer.Token.SEMICOLON);
+                    addVirtualSignal(new VirtualSignal(sigName, sigExpression));
+                    break;
                 case END:
                     tok.consume();
                     expect(endToken);
@@ -145,6 +192,33 @@ public class Parser {
                     throw newUnexpectedToken(t);
             }
         }
+    }
+
+    private DataField parseData() throws IOException, ParserException {
+        expect(Tokenizer.Token.OPEN);
+        DataField df = new DataField();
+        int addr = 0;
+        while (true) {
+            expect(Tokenizer.Token.NUMBER);
+            df.setData(addr, convToLong(tok.getIdent()));
+            addr++;
+            Tokenizer.Token t = tok.next();
+            switch (t) {
+                case COMMA:
+                    break;
+                case CLOSE:
+                    return df;
+                default:
+                    throw newUnexpectedToken(t);
+            }
+        }
+    }
+
+    private void addVirtualSignal(VirtualSignal vs) throws ParserException {
+        for (VirtualSignal v : virtualSignals)
+            if (v.getName().equals(vs.getName()))
+                throw new ParserException(Lang.get("err_virtualSignal_N_DeclaredTwiceInLine_N", vs.getName(), tok.getLine()));
+        virtualSignals.add(vs);
     }
 
     private LineEmitter parseSingleRow() throws IOException, ParserException {
@@ -212,6 +286,20 @@ public class Parser {
      */
     public ArrayList<String> getNames() {
         return names;
+    }
+
+    /**
+     * @return the list  of declared virtual signals
+     */
+    public ArrayList<VirtualSignal> getVirtualSignals() {
+        return virtualSignals;
+    }
+
+    /**
+     * @return the model init actions
+     */
+    public ModelInitializer getModelInitializer() {
+        return modelInit;
     }
 
     /**
@@ -357,7 +445,7 @@ public class Parser {
         while (isToken(Tokenizer.Token.SHIFTRIGHT)) {
             Expression a = ac;
             Expression b = parseShiftLeft();
-            ac = (c) -> a.value(c) >> b.value(c);
+            ac = (c) -> a.value(c) >>> b.value(c);
         }
         return ac;
     }

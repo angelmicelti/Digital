@@ -25,6 +25,7 @@ import de.neemann.digital.gui.Main;
 import de.neemann.digital.gui.Settings;
 import de.neemann.digital.gui.components.modification.*;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.testing.TestCaseElement;
 import de.neemann.digital.undo.*;
 import de.neemann.gui.*;
 
@@ -115,6 +116,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private final ToolTipAction undoAction;
     private final ToolTipAction redoAction;
     private final UndoManager<Circuit> undoManager;
+    private final Mouse mouse = Mouse.getMouse();
 
     private MouseController activeMouseController;
     private AffineTransform transform = new AffineTransform();
@@ -127,7 +129,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private boolean antiAlias = true;
 
     private Style highLightStyle = Style.HIGHLIGHT;
-    private Mouse mouse = Mouse.getMouse();
     private Circuit shallowCopy;
     private CircuitScrollPanel circuitScrollPanel;
     private TutorialListener tutorialListener;
@@ -569,8 +570,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             removeHighLighted();
         }
 
+        Circuit circuit = getCircuitOrShallowCopy();
+
         Vector pos = getPosVector(event);
-        VisualElement ve = getCircuit().getElementAt(pos);
+        VisualElement ve = circuit.getElementAt(pos);
         if (ve != null) {
             Pin p = ve.getPinAt(raster(pos));
             if (p != null)
@@ -591,7 +594,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             }
         }
 
-        Wire w = getCircuit().getWireAt(pos, SIZE2);
+        Wire w = circuit.getWireAt(pos, (int) (SIZE2 / transform.getScaleX()));
         if (w != null) {
             ObservableValue v = w.getValue();
             if (v != null)
@@ -856,7 +859,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 buffer = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().createCompatibleImage(getWidth(), getHeight());
 
             Graphics2D gr2 = buffer.createGraphics();
-            enableAntiAlias(gr2);
+
+            GraphicSwing gr = new GraphicSwing(gr2, (int) (2 / scaleX));
+            gr.enableAntiAlias(antiAlias);
+
             gr2.setColor(ColorScheme.getSelected().getColor(ColorKey.BACKGROUND));
             gr2.fillRect(0, 0, getWidth(), getHeight());
 
@@ -865,13 +871,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
             gr2.transform(transform);
 
-            GraphicSwing gr = new GraphicSwing(gr2, (int) (2 / scaleX));
-
             long time = System.currentTimeMillis();
-            if (shallowCopy != null)
-                shallowCopy.drawTo(gr, highLighted, highLightStyle, modelSync);
-            else
-                getCircuit().drawTo(gr, highLighted, highLightStyle, modelSync);
+            getCircuitOrShallowCopy().drawTo(gr, highLighted, highLightStyle, modelSync);
             time = System.currentTimeMillis() - time;
 
             if (time > 500) antiAlias = false;
@@ -887,8 +888,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         Graphics2D gr2 = (Graphics2D) g;
         AffineTransform oldTrans = gr2.getTransform();
         gr2.transform(transform);
-        enableAntiAlias(gr2);
         GraphicSwing gr = new GraphicSwing(gr2, (int) (2 / scaleX));
+        gr.enableAntiAlias(activeMouseController.drawables() < 200);
         activeMouseController.drawTo(gr);
         gr2.setTransform(oldTrans);
     }
@@ -923,6 +924,15 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 gr2.fill(new Rectangle2D.Double(xx, yy, delta, delta));
             }
         }
+
+        if (getCircuit().getAttributes().get(Keys.IS_GENERIC)) {
+            double dx = (p2.getX() - p1.getX()) / cx / 2;
+            double dy = (p2.getY() - p1.getY()) / cy / 2;
+
+            Point2D.Double origin = new Point2D.Double();
+            transform.transform(new Point(0, 0), origin);
+            gr2.drawOval((int) (origin.getX() - dy), (int) (origin.getY() - dy), (int) (dx * 2), (int) (dy * 2));
+        }
     }
 
     /**
@@ -937,14 +947,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         return p;
     }
 
-    private void enableAntiAlias(Graphics2D gr2) {
-        if (antiAlias) {
-            gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            gr2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            gr2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-        }
-    }
-
     @Override
     public void hasChanged() {
         graphicHasChanged();
@@ -957,7 +959,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
     private Vector getPosVector(int x, int y) {
         try {
-            Point2D.Double p = new Point2D.Double();
+            Point2D.Float p = new Point2D.Float();
             transform.inverseTransform(new Point(x, y), p);
             return new Vector((int) Math.round(p.getX()), (int) Math.round(p.getY()));
         } catch (NoninvertibleTransformException e1) {
@@ -983,6 +985,13 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         return undoManager.getActual();
     }
 
+    private Circuit getCircuitOrShallowCopy() {
+        if (shallowCopy != null)
+            return shallowCopy;
+        else
+            return undoManager.getActual();
+    }
+
     /**
      * Sets a circuit to this component
      *
@@ -1006,7 +1015,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      */
     public void fitCircuit() {
         GraphicMinMax gr = new GraphicMinMax();
-        getCircuit().drawTo(gr);
+        getCircuitOrShallowCopy().drawTo(gr);
 
         AffineTransform newTrans = new AffineTransform();
         if (gr.getMin() != null && getWidth() != 0 && getHeight() != 0) {
@@ -1046,6 +1055,23 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         transform.translate(dif.x, dif.y);
         transform.scale(f, f);
         transform.translate(-dif.x, -dif.y);
+        isManualScale = true;
+        if (circuitScrollPanel != null)
+            circuitScrollPanel.transformChanged(transform);
+        graphicHasChanged();
+    }
+
+    /**
+     * sets the scale of the circuit
+     *
+     * @param f factor to scale
+     */
+    public void setScale(float f) {
+        Vector origin = getPosVector(getWidth() / 2, getHeight() / 2);
+        transform.setToScale(f, f);
+        VectorInterface tr = new Vector(getWidth() / 2, getHeight() / 2).mul(1 / f).sub(origin);
+        transform.translate(tr.getXFloat(), tr.getYFloat());
+
         isManualScale = true;
         if (circuitScrollPanel != null)
             circuitScrollPanel.transformChanged(transform);
@@ -1117,6 +1143,18 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                     }
                 }
 
+                if (getCircuit().getAttributes().get(Keys.IS_GENERIC)) {
+                    if (elementType == GenericInitCode.DESCRIPTION || elementType == TestCaseElement.DESCRIPTION) {
+                        if (element.getElementAttributes().get(Keys.GENERIC).isEmpty()) {
+                            try {
+                                element.getElementAttributes().set(Keys.GENERIC, ElementTypeDescriptionCustom.createDeclarationDefault(getCircuit()));
+                            } catch (NodeException ex) {
+                                new ErrorMessage(Lang.get("msg_errParsingGenerics")).addCause(ex).show(CircuitComponent.this);
+                            }
+                        }
+                    }
+                }
+
                 Point p = new Point(e.getX(), e.getY());
                 SwingUtilities.convertPointToScreen(p, CircuitComponent.this);
                 AttributeDialog attributeDialog = new AttributeDialog(parent, p, list, element.getElementAttributes())
@@ -1136,6 +1174,40 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                                     .openLater();
                         }
                     }.setToolTip(Lang.get("attr_openCircuit_tt")));
+                }
+                if ((elementType == GenericInitCode.DESCRIPTION || elementType == GenericCode.DESCRIPTION) && getCircuit().getAttributes().get(Keys.IS_GENERIC)) {
+                    attributeDialog.addButton(Lang.get("attr_createConcreteCircuitLabel"), new ToolTipAction(Lang.get("attr_createConcreteCircuit")) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                attributeDialog.fireOk();
+                                ElementAttributes modified = attributeDialog.getModifiedAttributes();
+                                if (modified != null && !isLocked() && !modified.equals(element.getElementAttributes())) {
+                                    Modification<Circuit> mod = new ModifyAttributes(element, modified);
+                                    modify(checkNetRename(element, modified, mod));
+                                }
+
+                                ElementAttributes attr = null;
+                                if (elementType == GenericInitCode.DESCRIPTION)
+                                    attr = element.getElementAttributes();
+
+                                Circuit concreteCircuit = new ResolveGenerics(getCircuit(), library)
+                                        .resolveCircuit(attr)
+                                        .cleanupConcreteCircuit()
+                                        .getCircuit();
+
+                                new Main.MainBuilder()
+                                        .setParent(parent)
+                                        .setCircuit(concreteCircuit)
+                                        .setLibrary(library)
+                                        .denyMostFileActions()
+                                        .keepPrefMainFile()
+                                        .openLater();
+                            } catch (NodeException | ElementNotFoundException | Editor.EditorParseException ex) {
+                                new ErrorMessage(Lang.get("attr_createConcreteCircuitErr")).addCause(ex).show(parent);
+                            }
+                        }
+                    }.setToolTip(Lang.get("attr_createConcreteCircuit_tt")));
                 }
                 attributeDialog.addButton(new ToolTipAction(Lang.get("attr_help")) {
                     @Override
@@ -1159,7 +1231,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
                 ElementAttributes modified = attributeDialog.showDialog();
                 if (elementType == Tunnel.DESCRIPTION) {
-                    if (modified.contains(Keys.NETNAME))
+                    if (modified != null && modified.contains(Keys.NETNAME))
                         lastUsedTunnelName = modified.get(Keys.NETNAME);
                 }
                 if (modified != null && !locked) {
@@ -1241,12 +1313,14 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     }
 
     /**
-     * Makes actual input values to the default value
+     * Makes current input values to the default values
      */
-    public void actualToDefault() {
+    public void currentToDefault() {
         if (!isLocked()) {
             Modifications.Builder<Circuit> builder = new Modifications.Builder<>(Lang.get("menu_actualToDefault"));
-            for (VisualElement ve : getCircuit().getElements())
+
+            Circuit circuit = getCircuitOrShallowCopy();
+            for (VisualElement ve : circuit.getElements())
                 if (ve.equalsDescription(In.DESCRIPTION)) {
                     ObservableValue ov = ((InputShape) ve.getShape()).getObservableValue();
                     if (ov != null) {
@@ -1367,7 +1441,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
     private ArrayList<Key> getAttributeList(VisualElement ve) throws ElementNotFoundException {
         ArrayList<Key> list = library.getElementType(ve.getElementName()).getAttributeList();
-        if (getCircuit().getAttributes().get(Keys.IS_GENERIC) && !list.contains(Keys.GENERIC)) {
+        if (getCircuit().getAttributes().get(Keys.IS_GENERIC) && !(list.contains(Keys.GENERIC) || list.contains(Keys.GENERICLARGE))) {
             list = new ArrayList<>(list);
             list.add(Keys.GENERIC);
         }
@@ -1395,6 +1469,16 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      */
     boolean isManualScale() {
         return isManualScale;
+    }
+
+    /**
+     * Sets a copy to use temporarily to draw the circuit.
+     * Used to visualize a created concrete circuit created from a generic one.
+     *
+     * @param circuit the circuit to use.
+     */
+    public void setCopy(Circuit circuit) {
+        shallowCopy = circuit;
     }
 
     private final class PlusMinusAction extends ToolTipAction {
@@ -1538,6 +1622,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             return false;
         }
 
+        public int drawables() {
+            return 0;
+        }
+
         public void drawTo(Graphic gr) {
         }
 
@@ -1572,6 +1660,12 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
 
         private MouseControllerNormal(Cursor cursor) {
             super(cursor);
+        }
+
+        @Override
+        void activate() {
+            super.activate();
+            pos = null;
         }
 
         @Override
@@ -1614,7 +1708,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         @Override
         boolean dragged(MouseEvent e) {
             if (mouse.isPrimaryClick(downButton)) {
-                mouseSelect.activate(pos, getPosVector(e));
+                Vector p = getPosVector(e);
+                if (pos == null)
+                    pos = p;
+                mouseSelect.activate(pos, p);
                 return true;
             }
             return !mouse.isSecondaryClick(downButton);
@@ -1899,8 +1996,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 if (mouse.isSecondaryClick(e))
                     mouseNormal.activate();
                 else if (mouse.isPrimaryClick(e)) {
+                    boolean clickOnWire = getCircuit().isWireAt(wire.p2);
                     modify(new ModifyInsertWire(wire).checkIfLenZero());
-                    if (getCircuit().isPinPos(wire.p2))
+                    if (clickOnWire || getCircuit().isPinPos(wire.p2))
                         mouseNormal.activate();
                     else
                         mouseWireRect.activate(wire.p2);
@@ -1989,11 +2087,12 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 if (mouse.isSecondaryClick(e))
                     mouseNormal.activate();
                 else if (mouse.isPrimaryClick(e)) {
+                    boolean clickOnWire = getCircuit().isWireAt(wire2.p2);
                     modify(new Modifications.Builder<Circuit>(Lang.get("mod_insertWire"))
                             .add(new ModifyInsertWire(wire1).checkIfLenZero())
                             .add(new ModifyInsertWire(wire2).checkIfLenZero())
                             .build());
-                    if (getCircuit().isPinPos(wire2.p2))
+                    if (clickOnWire || getCircuit().isPinPos(wire2.p2))
                         mouseNormal.activate();
                     else {
                         initialPos = wire2.p2;
@@ -2085,6 +2184,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         private Vector corner1;
         private Vector corner2;
         private boolean wasReleased;
+        private boolean moveOnDragging;
 
         private MouseControllerSelect(Cursor cursor) {
             super(cursor);
@@ -2127,10 +2227,18 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         @Override
+        void pressed(MouseEvent e) {
+            moveOnDragging = mouse.isPrimaryClick(e);
+        }
+
+        @Override
         boolean dragged(MouseEvent e) {
             if (wasReleased) {
-                if (!isLocked())
-                    mouseMoveSelected.activate(corner1, corner2, getPosVector(e));
+                if (moveOnDragging) {
+                    if (!isLocked())
+                        mouseMoveSelected.activate(corner1, corner2, getPosVector(e));
+                } else
+                    return false;
             } else {
                 corner2 = getPosVector(e);
                 if (mouse.isClickModifier(e)) {
@@ -2150,7 +2258,6 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                     }
                     corner2 = corner1.add(dx, dy);
                 }
-
                 updateHighlighting();
             }
             return true;
@@ -2279,6 +2386,11 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         @Override
+        public int drawables() {
+            return elements.getDrawables().size();
+        }
+
+        @Override
         public void drawTo(Graphic gr) {
             for (Drawable m : elements.getDrawables())
                 m.drawTo(gr, Style.HIGHLIGHT);
@@ -2306,6 +2418,12 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                         max = mm.getMax();
                     else
                         max = Vector.max(max, mm.getMax());
+                } else if (m instanceof Wire) {
+                    Wire w = (Wire) m;
+                    if (max == null)
+                        max = Vector.max(w.p1, w.p2);
+                    else
+                        max = Vector.max(max, w.p1, w.p2);
                 }
 
             if (max != null) {
@@ -2335,6 +2453,13 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         @Override
+        public int drawables() {
+            if (elements == null)
+                return 0;
+            return elements.size();
+        }
+
+        @Override
         public void drawTo(Graphic gr) {
             if (elements != null)
                 for (Movable m : elements)
@@ -2351,12 +2476,14 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         void clicked(MouseEvent e) {
             if (elements != null && mouse.isPrimaryClick(e)) {
                 Modifications.Builder<Circuit> builder = new Modifications.Builder<>(Lang.get("mod_insertCopied"));
+                ArrayList<Wire> wires = new ArrayList<>();
                 for (Movable m : elements) {
                     if (m instanceof Wire)
-                        builder.add(new ModifyInsertWire((Wire) m));
+                        wires.add((Wire) m);
                     if (m instanceof VisualElement)
                         builder.add(new ModifyInsertElement((VisualElement) m));
                 }
+                builder.add(new ModifyInsertWires(wires));
                 modify(builder.build());
             }
             mouseNormal.activate();
@@ -2396,7 +2523,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         private VisualElement getInteractiveElementAt(MouseEvent e) {
-            List<VisualElement> elementList = getCircuit().getElementListAt(getPosVector(e), false);
+            Circuit circuit = getCircuitOrShallowCopy();
+            List<VisualElement> elementList = circuit.getElementListAt(getPosVector(e), false);
             for (VisualElement ve : elementList) {
                 if (ve.isInteractive())
                     return ve;

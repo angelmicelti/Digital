@@ -10,11 +10,13 @@ import de.neemann.digital.core.element.Key;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.draw.elements.PinException;
 import de.neemann.digital.draw.graphics.GraphicSVG;
+import de.neemann.digital.gui.components.EditorFactory;
 import junit.framework.TestCase;
 
 import java.lang.reflect.Field;
 
 /**
+ *
  */
 public class TestKeyConsistence extends TestCase {
 
@@ -28,8 +30,9 @@ public class TestKeyConsistence extends TestCase {
 
             if (key instanceof Key.KeyEnum) {
                 Key.KeyEnum ke = (Key.KeyEnum) key;
-                for (Enum v : ke.getValues())
-                    checkKey(ke.getLangKey(v));
+                if (!ke.usesToString())
+                    for (Enum v : ke.getValues())
+                        checkKey(ke.getLangKey(v));
             }
         }
     }

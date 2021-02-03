@@ -13,12 +13,6 @@
     <string name="attr_openCircuit_tt">Opens the circuit in a new window.</string>
     <string name="attr_help">Help</string>
     <string name="attr_help_tt">Shows a short description of this element.</string>
-    <string name="attr_dialogHex">Hex</string>
-    <string name="attr_dialogDecimal">Decimal</string>
-    <string name="attr_dialogAscii">ASCII</string>
-    <string name="attr_dialogHighz">HighZ</string>
-    <string name="attr_dialogOctal">Octal</string>
-    <string name="attr_dialogBinary">Binary</string>
     <string name="attr_panel_primary">Basic</string>
     <string name="attr_panel_secondary">Advanced</string>
     <string name="btn_discard">Discard Changes</string>
@@ -150,7 +144,9 @@
 
     <string name="elem_PolarityAwareLED">LED with two connections.</string>
     <string name="elem_PolarityAwareLED_tt">LED with connections for the cathode and the anode. The LED lights up,
-        if the anode is connected to high and the cathode is connected to low.</string>
+        if the anode is connected to high and the cathode is connected to low.
+        This LED cannot be used as a pull-down resistor. It acts solely as a display element.
+        The shown resistor is only meant to symbolize the required series resistor to limit the current.</string>
     <string name="elem_PolarityAwareLED_pin_A">The anode connection of the LED.</string>
     <string name="elem_PolarityAwareLED_pin_C">The cathode connection of the LED.</string>
 
@@ -245,6 +241,17 @@
         You can plot complete clock cycles or single gate changes.
         Does not affect the simulation.
     </string>
+    <string name="elem_ScopeTrigger">Triggered Data Graph</string>
+    <string name="elem_ScopeTrigger_short">Scope</string>
+    <string name="elem_ScopeTrigger_tt">Shows a graph of measured values, whereby measured values are only stored if
+        the input signal changes. Storing takes place when the circuit has stabilized.
+        The trigger does not start the measurement like in a real scope, but each trigger event stores a single
+        measurement value for each of the shown signals.
+        As direct input there is only the trigger. The inputs and outputs of the circuit, flip-flops and registers and the
+        probe component can be used as signals. This can be activated in the respective components.
+    </string>
+    <string name="elem_ScopeTrigger_pin_T">A change at this input causes measured values to be stored.</string>
+
     <string name="elem_RotEncoder">Rotary Encoder</string>
     <string name="elem_RotEncoder_tt">Rotary knob with rotary encoder. Used to detect rotational movements.</string>
     <string name="elem_RotEncoder_pin_A">encoder signal A</string>
@@ -331,6 +338,13 @@
     <string name="elem_VDD">Supply voltage</string>
     <string name="elem_VDD_tt">A connection to the supply voltage. Output is always one.</string>
     <string name="elem_VDD_pin_out">This output always returns 1.</string>
+    <string name="elem_NotConnected">Not Connected</string>
+    <string name="elem_NotConnected_tt">This component can be used to set a wire to High-Z.
+        If an input of a logical gate is set to high-Z, the read value is undefined.
+        Note that in reality in many cases excessive current consumption and even damage can
+        occur if a digital input is not set to high or low but remains unconnected.</string>
+    <string name="elem_NotConnected_pin_out">This output always outputs High-Z.</string>
+    <string name="err_notConnectedNotAllowed">The NotConnected symbol is not allowed here!</string>
     <string name="elem_Const">Constant value</string>
     <string name="elem_Const_tt">A component which returns a given value as a simple constant value. The value can be set in the attribute dialog.</string>
     <string name="elem_Const_pin_out">Returns the given value as a constant.</string>
@@ -546,6 +560,7 @@
     <string name="elem_Register_pin_C">Clock input. A rising edge stores the value at the D pin.</string>
     <string name="elem_Register_pin_en">Enable pin. Storing a value works only if this pin is set high.</string>
     <string name="elem_Register_pin_Q">Returns the stored value.</string>
+
     <string name="elem_ROM">ROM</string>
     <string name="elem_ROM_tt">A non-volatile memory component.
         The stored data can be edited in the attributes dialog.
@@ -553,6 +568,18 @@
     <string name="elem_ROM_pin_A">This pin defines the address of data word to be output.</string>
     <string name="elem_ROM_pin_D">The selected data word if the sel input is high.</string>
     <string name="elem_ROM_pin_sel">If the input is high, the output is activated. If it is low, the data output is in high Z state.</string>
+
+    <string name="elem_ROMDualPort">ROM dual port</string>
+    <string name="elem_ROMDualPort_short">ROM</string>
+    <string name="elem_ROMDualPort_tt">A non-volatile memory component.
+        The stored data can be edited in the attributes dialog.
+    </string>
+    <string name="elem_ROMDualPort_pin_A1">This pin defines the address of data word to be output on D1.</string>
+    <string name="elem_ROMDualPort_pin_D1">The selected data word if the s1 input is high.</string>
+    <string name="elem_ROMDualPort_pin_s1">If the input is high, the output D1 is activated. If it is low, the data output is in high Z state.</string>
+    <string name="elem_ROMDualPort_pin_A2">This pin defines the address of data word to be output on D2.</string>
+    <string name="elem_ROMDualPort_pin_D2">The selected data word if the s2 input is high.</string>
+    <string name="elem_ROMDualPort_pin_s2">If the input is high, the output D2 is activated. If it is low, the data output is in high Z state.</string>
 
     <string name="elem_RAMDualPort">RAM, separated Ports</string>
     <string name="elem_RAMDualPort_short">RAM</string>
@@ -786,6 +813,19 @@
     <string name="elem_BitCount_pin_in">The input which 1-bits are counted.</string>
     <string name="elem_BitCount_pin_out">Outputs the number of 1-bits.</string>
 
+    <string name="elem_PRNG">Random Number Generator</string>
+    <string name="elem_PRNG_tt">Can be used to generate random numbers.
+        When the simulation is started, the generator is reinitialized so that a new pseudo-random number
+        sequence is generated at each start.
+        The generator can be initialized in the running simulation with a defined seed value to generate
+        a defined pseudo-random number sequence.
+    </string>
+    <string name="elem_PRNG_short">PRNG</string>
+    <string name="elem_PRNG_pin_S">New seed value of the generator.</string>
+    <string name="elem_PRNG_pin_se">If set, the random number generator is reinitialized with the new seed value at the next rising clock edge.</string>
+    <string name="elem_PRNG_pin_ne">If set, a new random number is output at the next rising clock edge.</string>
+    <string name="elem_PRNG_pin_C">The clock input.</string>
+    <string name="elem_PRNG_pin_R">Output of the pseudorandom number.</string>
 
     <!-- Switches -->
 
@@ -886,15 +926,27 @@
         In a test case you can describe how a circuit should behave. It can then be automatically checked whether the
         behavior of the circuit actually corresponds to this description. If this is not the case, an
         error message is shown.
+        The help text of the test case editor describes in detail how such a test case can be created.
     </string>
+    <string name="elem_GenericInitCode">Generic Initialization</string>
+    <string name="elem_GenericInitCode_tt">Code that is executed to start a generic circuit directly.
+        If a generic circuit is to be started directly, such a component must be present.
+    </string>
+    <string name="elem_GenericCode">Code</string>
+    <string name="elem_GenericCode_tt">Code that is executed when a generic circuit is made concrete.
+        Can be used, for example, to add components or wires to a circuit.
+    </string>
+
     <string name="elem_AsyncSeq">Asynchronous Timing</string>
     <string name="elem_AsyncSeq_tt">Allows configuration of the timing of an asynchronous sequential circuit such as a
         Muller-pipeline. The circuit must be started in single gate step mode and must be able to reach a stable state
         at startup. The sequential circuit can then be started interactively or with a reset gate.
-        It is not allowed to use a regular clock component in this mode.</string>
+        It is not allowed to use a regular clock component in this mode.
+    </string>
     <string name="elem_PowerSupply">Power</string>
     <string name="elem_PowerSupply_tt">Has no function. Makes sure that VDD and GND are connected.
-        Can be used in 74xx circuits to generate the pins for the voltage supply, which are tested for correct wiring.</string>
+        Can be used in 74xx circuits to generate the pins for the voltage supply, which are tested for correct wiring.
+    </string>
     <string name="elem_PowerSupply_pin_VDD">Must be connected to VDD!</string>
     <string name="elem_PowerSupply_pin_GND">Must be connected to GND!</string>
     <string name="elem_Reset">Reset</string>
@@ -1050,6 +1102,9 @@
     <string name="err_vhdlANameIsMissing">A name is missing. Have e.g. all pins a label set?</string>
     <string name="err_hdlMultipleOutputsConnectedToNet_N_N_N">Several outputs are connected to each other.
         This type of interconnection is not supported for HDL export. ({0}, {1}, {2}).</string>
+    <string name="err_hdlTestCaseHasGenericCode">Test cases with generic parameterization are not supported in HDL
+        export!
+    </string>
     <string name="err_unnamedNet">unnamed net</string>
     <string name="err_toManyVars">Too many variables!</string>
     <string name="err_invalidExpression">Invalid expression!</string>
@@ -1114,6 +1169,9 @@
     <string name="err_clocksNotAllowedInAsyncMode">Clock elements can not be used in asynchronous mode.</string>
     <string name="err_verilogExporting">Error during export to Verilog.</string>
     <string name="err_noRomFound">No program memory found! The program memory needs to be flagged as such.</string>
+    <string name="err_multipleRomsFound">Multiple program memories found! Only one program memory is allowed.</string>
+    <string name="err_noMemoryFound">No memory "{0}" found in the model!</string>
+    <string name="err_multipleMemoriesFound">Multiple memories "{0}" found in the model!</string>
     <string name="err_errorLoadingRomData">Error loading the program memory.</string>
     <string name="err_parsingSVG">Error while reading the SVG file.</string>
     <string name="err_morePinsDefinedInSVGAsNeeded">The SVG file contains pins that do not exist in the circuit.</string>
@@ -1132,20 +1190,31 @@
     <string name="err_substitutingError">Error when substituting components for the analysis.</string>
     <string name="err_evaluatingGenericsCode_N_N">Error in the evaluation of the generic code of the circuit. Code
         {1}
-        at Component: {0}</string>
+        at Component: {0}
+    </string>
     <string name="msg_errParsingGenerics">Error while parsing generics code.</string>
+    <string name="err_noGenericInitCode">No initialization code for the generic components.
+        A respective component must be added to the circuit in order to start it.
+    </string>
+    <string name="err_multipleGenericInitCodes">Multiple initialization codes for the generic elements.</string>
+    <string name="err_inGenericInitCode">Error in the analysis of the generic initialization code.</string>
+
     <string name="err_ROM_noFileGivenToLoad">There is no file name available for the automatic reload!</string>
+    <string name="err_virtualSignal_N_DeclaredTwiceInLine_N">Virtual signal {0} declared twice in line {1}!</string>
 
     <string name="key_AddrBits">Address Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Number of address bits used.</string>
-    <string name="key_Bits">Data Bits</string><!-- And, NAnd, Or, NOr, XOr, XNOr, Not, LookUpTable, Delay, Out, In, Ground, VDD, Const, PullUp, PullDown, Driver, DriverInvSel, Multiplexer, Demultiplexer, D_FF, D_FF_AS, Register, ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM, GraphicCard, Counter, Add, Sub, Mul, BarrelShifter, Comparator, Neg, BitCount, Switch, Relay, PFET, NFET, FGPFET, FGNFET, TransGate -->
+    <string name="key_Bits">Data Bits</string>
     <string name="key_Bits_tt">Number of data bits used.</string>
     <string name="key_Color">Color</string><!-- LED, LightBulb, Seven-Seg, Seven-Seg-Hex, LedMatrix -->
     <string name="key_Color_tt">The Color of the element.</string>
     <string name="key_backgroundColor">Background color</string>
-    <string name="key_backgroundColor_tt">Background color of the circuit when it is embedded in another circuit. Is not used for DIL packages.</string>
+    <string name="key_backgroundColor_tt">Background color of the circuit when it is embedded in another circuit. Is not
+        used for DIL packages.
+    </string>
     <string name="key_Cycles">Timeout cycles</string><!-- Break -->
-    <string name="key_Cycles_tt">If this amount of cycles is reached without a break signal, an error is created.</string>
+    <string name="key_Cycles_tt">If this amount of cycles is reached without a break signal, an error is created.
+    </string>
     <string name="key_Data">Data</string><!-- LookUpTable, ROM, EEPROM -->
     <string name="key_Data_tt">The values stored in this element.</string>
     <string name="key_Default">Default</string><!-- Demultiplexer, RS_FF, JK_FF, D_FF, T_FF, JK_FF_AS, D_FF_AS -->
@@ -1220,6 +1289,11 @@
     <string name="key_intFormat_def">Default</string>
     <string name="key_intFormat_hex">Hex</string>
     <string name="key_intFormat_oct">Octal</string>
+    <string name="key_intFormat_fixed">Fixed Point</string>
+    <string name="key_intFormat_fixedSigned">Signed Fixed Point</string>
+    <string name="key_intFormat_floating">Floating Point</string>
+    <string name="key_fixedPoint">fixed point digits</string>
+    <string name="key_fixedPoint_tt">Number of fractional binary digits</string>
     <string name="key_barrelSigned">shift input has sign</string><!-- BarrelShifter -->
     <string name="key_barrelSigned_tt">shift input data has two complement format</string>
     <string name="key_barrelShifterMode">Mode</string><!-- BarrelShifter -->
@@ -1532,6 +1606,12 @@
     <string name="key_layoutShapeDelta_tt">Used by the layout shape type. Sets the distance to the previous pin.
     </string>
 
+    <string name="key_trigger">Trigger</string>
+    <string name="key_trigger_tt">Trigger condition for data recording.</string>
+    <string name="key_trigger_rising">rising edge</string>
+    <string name="key_trigger_falling">falling edge</string>
+    <string name="key_trigger_both">both edges</string>
+
     <string name="key_colorScheme">Color scheme</string>
     <string name="key_colorScheme_DEFAULT">Normal</string>
     <string name="key_colorScheme_DARK">Dark</string>
@@ -1574,6 +1654,7 @@
     <string name="mod_modifiedMeasurementOrdering">Ordered measurements.</string>
     <string name="mod_groupEdit">Modified attributes of selected components.</string>
     <string name="mod_splitWire">Splits a single wire into two wires.</string>
+    <string name="mod_modifiedByRunningModel">Changes made by the running simulation.</string>
 
     <string name="lib_Logic">Logic</string>
     <string name="lib_arithmetic">Arithmetic</string>
@@ -1703,6 +1784,8 @@
         If there is no break component, the remaining single gate steps are executed.</string>
     <string name="menu_synthesise">Synthesis</string>
     <string name="menu_synthesise_tt">Generates the minimal bool expressions described by a truth table.</string>
+    <string name="menu_scale">Set Scaling</string>
+
     <string name="menu_table_N_variables">{0} variables</string>
     <string name="menu_table_create">Create</string>
     <string name="menu_table_createCUPL_tt">Creates a CUPL source file containing the define circuit.</string>
@@ -1845,17 +1928,23 @@
     <string name="stat_addrBits">Addr. Bits</string>
 
     <string name="msg_keyAsGenericAttribute">Name to use in generic circuits: {0}</string>
+    <string name="attr_createConcreteCircuitLabel">Create Concrete Circuit</string>
+    <string name="attr_createConcreteCircuit">Create</string>
+    <string name="attr_createConcreteCircuit_tt">Creates a concrete circuit from this generic circuit using the
+        parameters specified in this element.
+    </string>
+    <string name="attr_createConcreteCircuitErr">Error while creating the concrete circuit!</string>
 
-    <string name="message">&lt;h1&gt;Digital&lt;/h1&gt;A simple simulator for digital circuits.
-        Written by H. Neemann in 2016-2020.
-
-        The icons are taken from the &lt;a href=&quot;http://tango.freedesktop.org&quot;&gt;Tango Desktop Project&lt;/a&gt;.
-
-        Visit the project at &lt;a href=&quot;https://github.com/hneemann/[[name]]&quot;&gt;GitHub&lt;/a&gt;.
-        At Github you can also &lt;a href=&quot;https://github.com/hneemann/[[name]]/releases/latest&quot;&gt;download&lt;/a&gt; the latest release.
-
-        There you also can file an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&amp;labels=bug&quot;&gt;issue&lt;/a&gt; or suggest
-        an &lt;a href=&quot;https://github.com/hneemann/[[name]]/issues/new?labels=enhancement&quot;&gt;enhancement&lt;/a&gt;.
+    <string name="message"><![CDATA[<h1>Digital</h1>
+        <p>A simple simulator for digital circuits.</p>
+        <p>Written by H. Neemann in 2016-2021.</p>
+        <p>The icons are taken from the <a href="http://tango.freedesktop.org">Tango Desktop Project</a>.</p>
+        <p>Visit the project at <a href="https://github.com/hneemann/[[name]]">GitHub</a>.
+        At Github you can also <a href="https://github.com/hneemann/[[name]]/releases/latest">download</a>
+        the latest release.</p>
+        <p>There you also can file an <a href="https://github.com/hneemann/[[name]]/issues/new?body=version:%20[[version]]&labels=bug">issue</a>
+        or suggest
+        an <a href="https://github.com/hneemann/[[name]]/issues/new?labels=enhancement">enhancement</a>.</p>]]>
     </string>
     <string name="msg_N_nodes">{0} nodes</string>
     <string name="msg_analyseErr">Error analysing the circuit</string>
@@ -1979,6 +2068,7 @@
     <string name="msg_dataWillBeLost_n">Do you really want to discard the changes in the "{0}" field?</string>
 
     <string name="msg_supportsHDL">Exportable to VHDL/Verilog.</string>
+    <string name="msg_errorSettingModelToTestCase">Error while setting the test case row.</string>
 
     <string name="err_vgaModeNotDetected_N">Video mode was not detected ({0})</string>
 
@@ -2046,23 +2136,24 @@
     ]]></string>
 
     <string name="msg_expressionHelpTitle">Expressions</string>
-    <string name="msg_expressionHelp">To define an expression you can use all most common notations:
-
-        And: &quot;&amp;&quot;, &quot;&amp;&amp;&quot;, &quot;*&quot;, &quot;∧&quot;
-        Or: &quot;|&quot;, &quot;||&quot;, &quot;+&quot;, &quot;∨&quot;, &quot;#&quot;
-        XOr: &quot;^&quot;, &quot;⊻&quot;
-        Not: &quot;!&quot;, &quot;~&quot;, &quot;&#172;&quot;
-
-        As usual AND precedes OR and XOr.
-
-        Multiple expressions can be separated by "," or ";".
+    <string name="msg_expressionHelp"><![CDATA[
+        <p>To define an expression you can use all most common notations:</p>
+        <p>
+        And: "&", "&&", "*", "∧"<br/>
+        Or: "|", "||", "+", "∨", "#"<br/>
+        XOr: "^", "⊻"<br/>
+        Not: "!", "~", "¬"
+        </p>
+        <p>As usual AND precedes OR and XOr.</p>
+        <p>Multiple expressions can be separated by "," or ";".
         If you want to name the expressions you can use the
-        let command: "let U=A+B, let V=A*B".
+        let command: "let U=A+B, let V=A*B".</p>]]>
     </string>
     <string name="msg_testVectorHelpTitle">Test vectors</string>
     <string name="msg_testVectorHelp"><![CDATA[<html>
     <head><style>pre { background-color: #E0E0E0;}</style></head>
     <body>
+<h3>General</h3>
 <p>The first line has to contain the names of inputs and outputs.
 The following lines contain the expected values.
 A 'X' represents a don't care, and a 'Z' represents a high Z value.
@@ -2162,6 +2253,42 @@ For this, the corresponding input must be set to high impedance ('Z').</p>
 <p>The circuit for this test has only one input 'D', but which can be high impedance state.
 Therefore, the signal 'D_out' is also available to check the value in this case.</p>
 
+<p>In special cases, it may be desirable to use the signals, which are provided by
+the circuit, to derive a new signal, which is then tested. An example could be a bus
+signal with several bits, where only a single bit should be tested, whereby the remaining
+bits have no influence on the test. In this case, a new signal can be generated in the
+test itself, which contains this one bit so that tests can be defined for this bit.</p>
+<p>This is done with the 'declare' statement:</p>
+<pre>A B Bit
+
+declare Bit = (Bus>>3)&1;
+
+0 0  0
+0 1  0
+1 0  1
+1 1  0
+</pre>
+<p>In this example, the 3rd bit is isolated from the 'Bus' signal and made available as
+the 'Bit' signal for the test. The circuit itself contains no output 'Bit'.</p>
+<h3>Processors</h3>
+<p>If processors are to be tested, an initialization of the processor is usually required.
+It is possible to perform this initialization within the test case.
+In this way, several tests can be located in one circuit and each test can use its own initialization.
+There are three instructions to perform this initialization:</p>
+<ul>
+<li>The 'program' statement can be used to overwrite the program memory of the processor.
+The instruction <pre>program(0x8000,0x2d11,0x8000,0x2f21)</pre> writes four words to the beginning
+of the program memory. All other words are set to zero.</li>.
+<li>The 'memory' instruction can be used to write to a RAM component:
+<pre>memory mem(3)=7;</pre>
+This example writes 7 to the memory with the label 'mem' at address 3.</li>
+<li> A labeled register can be overwritten with the 'init' statement.
+<pre>init R0=22;</pre>
+This instruction overwrites the register with the label 'R0' with the value 22.</li>
+</ul>
+<p>It should be noted that all used initializations are only applied once before the
+test execution. It does not matter in which line in the test case these statements are located.
+However, they must not be used above the header line listing the signal names.</p>.
 </body></html>]]></string>
 
     <string name="fsm_title">Finite State Machine</string>
@@ -2204,6 +2331,16 @@ Therefore, the signal 'D_out' is also available to check the value in this case.
     <string name="msg_fsm_errorLoadingFile">Error loading a file!</string>
     <string name="msg_fsm_errorStoringFile">Error storing a file!</string>
     <string name="msg_fsmHelpTitle">Help FSM Editor</string>
+
+    <string name="msg_fsm_optimizer">FSM-Optimizer</string>
+    <string name="menu_fsm_optimize_state_numbers">Optimize the State Numbers</string>
+    <string name="menu_fsm_optimize_state_numbers_tt">Optimizes the state numbers so that an implementation has the
+        least possible effort. The runtime increases very quickly with the complexity of the machine. (O(n!))
+    </string>
+    <string name="menu_fsm_optimize_state_numbers_err">Error during optimization!</string>
+    <string name="msg_fsm_optimizer_initial">Initial complexity:</string>
+    <string name="msg_fsm_optimizer_best">Best so far:</string>
+
     <string name="msg_fsmHelp"><![CDATA[
 <html><head></head>
 <body>

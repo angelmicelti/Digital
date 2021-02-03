@@ -11,6 +11,7 @@ import de.neemann.digital.core.element.ElementAttributes;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.core.element.PinDescriptions;
 import de.neemann.digital.core.io.In;
+import de.neemann.digital.core.ValueFormatter;
 import de.neemann.digital.draw.elements.IOState;
 import de.neemann.digital.draw.elements.Pin;
 import de.neemann.digital.draw.elements.Pins;
@@ -34,11 +35,9 @@ public class InputShape implements Shape {
 
     private final String label;
     private final PinDescriptions outputs;
-    private final IntFormat format;
+    private final ValueFormatter formatter;
     private final boolean isHighZ;
     private final boolean avoidLow;
-    private final long min;
-    private final long max;
     private final int bits;
     private IOState ioState;
     private SingleValueDialog dialog;
@@ -60,20 +59,13 @@ public class InputShape implements Shape {
         else
             this.label = attr.getLabel() + " (" + pinNumber + ")";
 
-        format = attr.get(Keys.INT_FORMAT);
+        formatter = attr.getValueFormatter();
 
         isHighZ = attr.get(Keys.INPUT_DEFAULT).isHighZ() || attr.get(Keys.IS_HIGH_Z);
 
         avoidLow = isHighZ && attr.get(Keys.AVOID_ACTIVE_LOW);
 
         bits = attr.getBits();
-        if (format.isSigned()) {
-            max = Bits.mask(bits) >> 1;
-            min = -max - 1;
-        } else {
-            min = 0;
-            max = Bits.mask(bits);
-        }
     }
 
     @Override
@@ -123,7 +115,7 @@ public class InputShape implements Shape {
                     if (inValue != null)
                         v = inValue;
                     Vector textPos = new Vector(-1 - OUT_SIZE, -4 - OUT_SIZE);
-                    graphic.drawText(textPos, format.formatToView(v), Orientation.CENTERBOTTOM, Style.NORMAL);
+                    graphic.drawText(textPos, formatter.formatToView(v), Orientation.CENTERBOTTOM, Style.NORMAL);
                 } else {
                     if (inValue != null && !inValue.isEqual(value))
                         graphic.drawPolygon(box, Style.getWireStyle(inValue));
@@ -166,7 +158,7 @@ public class InputShape implements Shape {
                 if (dialog == null || !dialog.isVisible()) {
                     Model model = ((In) element).getModel();
                     dialog = new SingleValueDialog(model.getWindowPosManager().getMainFrame(), pos, label, value, isHighZ, model)
-                            .setSelectedFormat(format);
+                            .setSelectedFormat(formatter);
                     dialog.setVisible(true);
                 } else
                     dialog.requestFocus();
@@ -189,12 +181,14 @@ public class InputShape implements Shape {
                     startValue = value.getValue();
                     lastValueSet = startValue;
                 } else {
-                    int delta = startPos.y - posOnScreen.y;
-                    long v = startValue + (delta * max) / SLIDER_HEIGHT;
-                    long val = Math.max(min, Math.min(v, max));
-                    if (val != lastValueSet) {
-                        modelSync.modify(() -> value.setValue(val));
-                        lastValueSet = val;
+                    int dy = startPos.y - posOnScreen.y;
+                    if (dy != 0) {
+                        double inc = ((double) dy) / SLIDER_HEIGHT;
+                        long val = formatter.dragValue(startValue, value.getBits(), inc);
+                        if (val != lastValueSet) {
+                            modelSync.modify(() -> value.setValue(val));
+                            lastValueSet = val;
+                        }
                     }
                 }
             }

@@ -12,10 +12,11 @@ public final class Signal implements Comparable<Signal> {
     private final String name;
     private final ObservableValue value;
     private final Setter setter;
-    private IntFormat format = IntFormat.def;
+    private ValueFormatter format = IntFormat.DEFAULT_FORMATTER;
     private String pinNumber;
     private ObservableValue bidirectionalReader;
     private boolean showInGraph;
+    private boolean testOutput;
 
     /**
      * Creates a new Instance
@@ -61,6 +62,23 @@ public final class Signal implements Comparable<Signal> {
     }
 
     /**
+     * Makes this signal to a test output signal
+     *
+     * @return this for chained calls
+     */
+    public Signal setTestOutput() {
+        testOutput = true;
+        return this;
+    }
+
+    /**
+     * @return true if this signal is a test output
+     */
+    public boolean isTestOutput() {
+        return testOutput;
+    }
+
+    /**
      * @return the name
      */
     public String getName() {
@@ -84,7 +102,7 @@ public final class Signal implements Comparable<Signal> {
      * @param format the format
      * @return this for chained calls
      */
-    public Signal setFormat(IntFormat format) {
+    public Signal setFormat(ValueFormatter format) {
         if (format != null)
             this.format = format;
         return this;
@@ -185,7 +203,7 @@ public final class Signal implements Comparable<Signal> {
     /**
      * @return the format to be used to visualize the signal values
      */
-    public IntFormat getFormat() {
+    public ValueFormatter getFormat() {
         return format;
     }
 

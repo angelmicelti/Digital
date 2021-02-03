@@ -5,7 +5,8 @@
  */
 package de.neemann.digital.gui.components;
 
-import de.neemann.digital.analyse.expression.format.FormatToExpression;
+import de.neemann.digital.FileLocator;
+import de.neemann.digital.core.Bits;
 import de.neemann.digital.core.*;
 import de.neemann.digital.core.element.*;
 import de.neemann.digital.core.extern.Application;
@@ -35,11 +36,9 @@ import de.neemann.gui.language.Language;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoManager;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -70,7 +69,6 @@ public final class EditorFactory {
         add(Rotation.class, RotationEditor.class);
         add(Language.class, LanguageEditor.class);
         add(TestCaseDescription.class, TestCaseDescriptionEditor.class);
-        add(FormatToExpression.class, FormatEditor.class);
         add(InverterConfig.class, InverterConfigEditor.class);
         add(ROMManger.class, ROMManagerEditor.class);
         add(Application.Type.class, ApplicationTypeEditor.class);
@@ -177,6 +175,7 @@ public final class EditorFactory {
 
         private final JTextComponent text;
         private final JComponent compToAdd;
+        private final UndoManager undoManager;
         private JPopupMenu popup;
 
         public StringEditor(String value, Key<String> key) {
@@ -219,6 +218,8 @@ public final class EditorFactory {
                 compToAdd = text;
             }
             text.setText(value);
+
+            undoManager = createUndoManager(text);
         }
 
         JPopupMenu getPopupMenu(String keyName) {
@@ -286,8 +287,10 @@ public final class EditorFactory {
 
         @Override
         public void setValue(String value) {
-            if (!text.getText().equals(value))
+            if (!text.getText().equals(value)) {
                 text.setText(value);
+                undoManager.discardAllEdits();
+            }
         }
 
         public JTextComponent getTextComponent() {
@@ -416,7 +419,7 @@ public final class EditorFactory {
         public void addToPanel(EditorPanel panel, Key<Long> key, ElementAttributes attr, AttributeDialog attributeDialog) {
             if (key.isAdaptiveIntFormat()) {
                 Value value = new Value(attr.get(key), attr.getBits());
-                comboBox.setSelectedItem(attr.get(Keys.INT_FORMAT).formatToEdit(value));
+                comboBox.setSelectedItem(attr.getValueFormatter().formatToEdit(value));
             }
             super.addToPanel(panel, key, attr, attributeDialog);
         }
@@ -457,7 +460,7 @@ public final class EditorFactory {
         public void addToPanel(EditorPanel panel, Key<InValue> key, ElementAttributes attr, AttributeDialog attributeDialog) {
             if (key.isAdaptiveIntFormat()) {
                 Value value = new Value(attr.get(key), attr.getBits());
-                comboBox.setSelectedItem(attr.get(Keys.INT_FORMAT).formatToEdit(value));
+                comboBox.setSelectedItem(attr.getValueFormatter().formatToEdit(value));
             }
             super.addToPanel(panel, key, attr, attributeDialog);
         }
@@ -530,7 +533,9 @@ public final class EditorFactory {
                 public void actionPerformed(ActionEvent e) {
                     Color col = JColorChooser.showDialog(button, Lang.get("msg_color"), color);
                     if (col != null) {
-                        color = col;
+                        // JColorChooser returns child classes from Color under certain circumstances.
+                        // The following line ensures that color is a Color instance.
+                        color = new Color(col.getRed(), col.getGreen(), col.getBlue(), col.getAlpha());
                         button.setBackground(color);
                     }
                 }
@@ -634,8 +639,10 @@ public final class EditorFactory {
                         getAttributeDialog().storeEditedValues();
                         int dataBits = attr.get(Keys.BITS);
                         int addrBits = getAddrBits(attr);
-                        DataEditor de = new DataEditor(panel, data, dataBits, addrBits, false, SyncAccess.NOSYNC, attr.get(Keys.INT_FORMAT));
-                        de.setFileName(attr.getFile(ROM.LAST_DATA_FILE_KEY));
+                        DataEditor de = new DataEditor(panel, data, dataBits, addrBits, false, SyncAccess.NOSYNC, attr.getValueFormatter());
+                        de.setFileName(new FileLocator(attr.getFile(ROM.LAST_DATA_FILE_KEY))
+                                .setupWithMain(getAttributeDialog().getMain())
+                                .locate());
                         if (de.showDialog()) {
                             DataField mod = de.getModifiedDataField();
                             if (!data.equals(mod))
@@ -654,7 +661,9 @@ public final class EditorFactory {
                             try {
                                 getAttributeDialog().storeEditedValues();
                                 int dataBits = attr.get(Keys.BITS);
-                                data = Importer.read(attr.getFile(ROM.LAST_DATA_FILE_KEY), dataBits)
+                                data = Importer.read(new FileLocator(attr.getFile(ROM.LAST_DATA_FILE_KEY))
+                                        .setupWithMain(getAttributeDialog().getMain())
+                                        .locate(), dataBits)
                                         .trimValues(getAddrBits(attr), dataBits);
                             } catch (IOException e1) {
                                 new ErrorMessage(Lang.get("msg_errorReadingFile")).addCause(e1).show(panel);
@@ -672,7 +681,9 @@ public final class EditorFactory {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 getAttributeDialog().storeEditedValues();
-                                final File file = attr.getFile(ROM.LAST_DATA_FILE_KEY);
+                                final File file = new FileLocator(attr.getFile(ROM.LAST_DATA_FILE_KEY))
+                                        .setupWithMain(getAttributeDialog().getMain())
+                                        .locate();
                                 data.saveTo(SaveAsHelper.checkSuffix(file, "hex"));
                             } catch (IOException e1) {
                                 new ErrorMessage(Lang.get("msg_errorWritingFile")).addCause(e1).show(panel);
@@ -863,13 +874,13 @@ public final class EditorFactory {
     }
 
     private static class LanguageEditor extends LabelEditor<Language> {
-        private JComboBox comb;
+        private final JComboBox<Language> comb;
 
-        public LanguageEditor(Language language, Key<Rotation> key) {
+        public LanguageEditor(Language language, Key<Language> key) {
             Bundle b = Lang.getBundle();
             List<Language> supLang = b.getSupportedLanguages();
-            comb = new JComboBox<>(supLang.toArray(new Language[supLang.size()]));
-            comb.setSelectedItem(Lang.currentLanguage());
+            comb = new JComboBox<>(supLang.toArray(new Language[0]));
+            comb.setSelectedItem(language);
         }
 
         @Override
@@ -884,31 +895,6 @@ public final class EditorFactory {
 
         @Override
         public void setValue(Language value) {
-            comb.setSelectedItem(value);
-        }
-    }
-
-    private static class FormatEditor extends LabelEditor<FormatToExpression> {
-        private JComboBox comb;
-
-        public FormatEditor(FormatToExpression format, Key<Rotation> key) {
-            FormatToExpression[] formats = FormatToExpression.getAvailFormats();
-            comb = new JComboBox<>(formats);
-            comb.setSelectedItem(format);
-        }
-
-        @Override
-        protected JComponent getComponent(ElementAttributes elementAttributes) {
-            return comb;
-        }
-
-        @Override
-        public FormatToExpression getValue() {
-            return (FormatToExpression) comb.getSelectedItem();
-        }
-
-        @Override
-        public void setValue(FormatToExpression value) {
             comb.setSelectedItem(value);
         }
     }
@@ -1106,4 +1092,30 @@ public final class EditorFactory {
             comb.setSelectedItem(value);
         }
     }
+
+    /**
+     * Enables undo in the given text component.
+     *
+     * @param text the text component
+     * @return the undo manager
+     */
+    public static UndoManager createUndoManager(JTextComponent text) {
+        final UndoManager undoManager;
+        undoManager = new UndoManager();
+        text.getDocument().addUndoableEditListener(undoManager);
+        text.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_Z && (e.getModifiersEx() & ToolTipAction.getCTRLMask()) != 0) {
+                    if (undoManager.canUndo())
+                        undoManager.undo();
+                } else if (e.getKeyCode() == KeyEvent.VK_Y && (e.getModifiersEx() & ToolTipAction.getCTRLMask()) != 0) {
+                    if (undoManager.canRedo())
+                        undoManager.redo();
+                }
+            }
+        });
+        return undoManager;
+    }
+
 }

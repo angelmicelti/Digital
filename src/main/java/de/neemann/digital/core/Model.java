@@ -66,6 +66,7 @@ public class Model implements Iterable<Node>, SyncAccess {
     private final ArrayList<Signal> signals;
     private final ArrayList<Signal> inputs;
     private final ArrayList<Signal> outputs;
+    private final ArrayList<Signal> testOutputs;
 
     private final ArrayList<Node> nodes;
     private ArrayList<Node> nodesToUpdateAct;
@@ -92,6 +93,7 @@ public class Model implements Iterable<Node>, SyncAccess {
         this.buttonsToMap = new HashMap<>();
         this.signals = new ArrayList<>();
         this.outputs = new ArrayList<>();
+        this.testOutputs = new ArrayList<>();
         this.inputs = new ArrayList<>();
         this.nodes = new ArrayList<>();
         this.nodesToUpdateAct = new ArrayList<>();
@@ -170,10 +172,8 @@ public class Model implements Iterable<Node>, SyncAccess {
      * Needs to be called after all nodes are added.
      * Resets and initializes the model.
      * Calls <code>init(true);</code>
-     *
-     * @throws NodeException NodeException
      */
-    public void init() throws NodeException {
+    public void init() {
         init(true);
     }
 
@@ -182,9 +182,8 @@ public class Model implements Iterable<Node>, SyncAccess {
      * Resets and initializes the model.
      *
      * @param noise setup with or without noise
-     * @throws NodeException NodeException
      */
-    public void init(boolean noise) throws NodeException {
+    public void init(boolean noise) {
         nodesToUpdateNext.addAll(nodes);
         state = State.INITIALIZING;
         doStep(noise);
@@ -225,6 +224,7 @@ public class Model implements Iterable<Node>, SyncAccess {
                     LOGGER.debug("Observer Micro: " + ob.getClass().getSimpleName());
 
             fireEvent(ModelEvent.CLOSED);
+            fireEvent(ModelEvent.POSTCLOSED);
         }
     }
 
@@ -277,24 +277,21 @@ public class Model implements Iterable<Node>, SyncAccess {
 
     synchronized private void stepWithCondition(boolean noise, StepCondition cond) {
         try {
-            if (cond.doNextMicroStep()) {
-                int counter = 0;
-                while (cond.doNextMicroStep() && state != State.CLOSED) {
-                    if (counter++ > MAX_LOOP_COUNTER) {
-                        if (oscillatingNodes == null)
-                            oscillatingNodes = new HashSet<>();
-                        if (counter > COLLECTING_LOOP_COUNTER) {
-                            NodeException seemsToOscillate = new NodeException(Lang.get("err_seemsToOscillate")).addNodes(oscillatingNodes);
-                            oscillatingNodes = null;
-                            throw seemsToOscillate;
-                        } else {
-                            oscillatingNodes.addAll(nodesToUpdateNext);
-                        }
+            int counter = 0;
+            while (cond.doNextMicroStep() && state != State.CLOSED) {
+                if (counter++ > MAX_LOOP_COUNTER) {
+                    if (oscillatingNodes == null)
+                        oscillatingNodes = new HashSet<>();
+                    if (counter > COLLECTING_LOOP_COUNTER) {
+                        NodeException seemsToOscillate = new NodeException(Lang.get("err_seemsToOscillate")).addNodes(oscillatingNodes);
+                        oscillatingNodes = null;
+                        throw seemsToOscillate;
+                    } else {
+                        oscillatingNodes.addAll(nodesToUpdateNext);
                     }
-                    doMicroStep(noise);
                 }
-            } else
-                fireEvent(ModelEvent.STEP);
+                doMicroStep(noise);
+            }
         } catch (Exception e) {
             errorOccurred(e);
         }
@@ -591,8 +588,13 @@ public class Model implements Iterable<Node>, SyncAccess {
      * @param signal the signal
      */
     public void addSignal(Signal signal) {
-        if (signal.isValid())
+        if (signal.isValid()) {
+            if (signals.contains(signal))
+                invalidSignal = signal;
             signals.add(signal);
+            if (signal.isTestOutput())
+                testOutputs.add(signal);
+        }
     }
 
     /**
@@ -628,6 +630,7 @@ public class Model implements Iterable<Node>, SyncAccess {
                 invalidSignal = signal;
             signals.add(signal);
             outputs.add(signal);
+            testOutputs.add(signal);
         } else
             invalidSignal = signal;
     }
@@ -652,6 +655,13 @@ public class Model implements Iterable<Node>, SyncAccess {
      */
     public ArrayList<Signal> getOutputs() {
         return outputs;
+    }
+
+    /**
+     * @return the models outputs
+     */
+    public ArrayList<Signal> getTestOutputs() {
+        return testOutputs;
     }
 
     /**
@@ -806,6 +816,19 @@ public class Model implements Iterable<Node>, SyncAccess {
         for (Signal i : outputs)
             if (i.getName().equals(name))
                 return i.getValue();
+        return null;
+    }
+
+    /**
+     * Returns the signal setter with the given name.
+     *
+     * @param name the name
+     * @return the input value
+     */
+    public Signal.Setter getSignalSetter(String name) {
+        for (Signal i : signals)
+            if (i.getName().equals(name))
+                return i.getSetter();
         return null;
     }
 
