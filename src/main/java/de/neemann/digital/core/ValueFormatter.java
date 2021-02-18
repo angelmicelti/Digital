@@ -54,4 +54,15 @@ public interface ValueFormatter {
      * @return the modified value
      */
     long dragValue(long initial, int bits, double inc);
+
+    /**
+     * Returns true if there should be a separator in front of the given bit.
+     *
+     * @param bits the number of bits in the value to format
+     * @param bit  the bit in question
+     * @return true if there should be a separator in front of the given bit.
+     */
+    default boolean isSeparatorInFrontOf(int bits, int bit) {
+        return false;
+    }
 }

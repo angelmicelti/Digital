@@ -11,6 +11,7 @@ import de.neemann.digital.lang.Lang;
 import de.neemann.gui.Screen;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 public final class SingleValueDialog extends JDialog implements ModelStateObserverTyped {
 
     private static final Format[] FORMATS;
+    private static final Border SEPARATOR = BorderFactory.createEmptyBorder(0, 0, 0, 5);
 
     static {
         ArrayList<Format> f = new ArrayList<>();
@@ -98,8 +100,10 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
         formatComboBox = new JComboBox<>(FORMATS);
         formatComboBox.addActionListener(actionEvent -> {
             Format selectedItem = (Format) formatComboBox.getSelectedItem();
-            if (selectedItem != null)
+            if (selectedItem != null) {
                 valueFormatter = selectedItem.intFormat.createFormatter(null);
+                updateSeparators();
+            }
             setLongToDialog(editValue);
         });
 
@@ -164,7 +168,7 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        pack();
+        updateSeparators();
         Screen.setLocation(this, pos, true);
         textField.requestFocus();
         textField.select(0, Integer.MAX_VALUE);
@@ -234,8 +238,20 @@ public final class SingleValueDialog extends JDialog implements ModelStateObserv
         valueFormatter = format;
         formatComboBox.setSelectedItem(findFormat(valueFormatter));
         setLongToDialog(editValue);
+        updateSeparators();
         requestFocus();
         return this;
+    }
+
+    private void updateSeparators() {
+        int bits = editValue.getBits();
+        for (int i = 1; i < checkBoxes.length; i++) {
+            if (valueFormatter.isSeparatorInFrontOf(bits, i))
+                checkBoxes[i].setBorder(SEPARATOR);
+            else
+                checkBoxes[i].setBorder(null);
+        }
+        pack();
     }
 
     private void setStringToDialog(String text) {

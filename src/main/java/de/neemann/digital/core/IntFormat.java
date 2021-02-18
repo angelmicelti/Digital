@@ -138,6 +138,11 @@ public enum IntFormat {
         public long dragValue(long initial, int bits, double inc) {
             return dragValueSigned(initial, bits, inc, false);
         }
+
+        @Override
+        public boolean isSeparatorInFrontOf(int bits, int bit) {
+            return bit % 4 == 0;
+        }
     }
 
     private static long dragValueSigned(long initial, int bits, double inc, boolean signed) {
@@ -224,6 +229,11 @@ public enum IntFormat {
         public int strLen(int bits) {
             return (bits - 1) / 4 + 3;
         }
+
+        @Override
+        public boolean isSeparatorInFrontOf(int bits, int bit) {
+            return bit % 4 == 0;
+        }
     }
 
     /**
@@ -288,6 +298,11 @@ public enum IntFormat {
                 sb.append(DIGITS[c]);
             }
             return sb.toString();
+        }
+
+        @Override
+        public boolean isSeparatorInFrontOf(int bits, int bit) {
+            return bit % 3 == 0;
         }
     }
 
@@ -448,6 +463,11 @@ public enum IntFormat {
         public long dragValue(long initial, int bits, double inc) {
             return dragValueSigned(initial, bits, inc, signed);
         }
+
+        @Override
+        public boolean isSeparatorInFrontOf(int bits, int bit) {
+            return bit == fixedPoint;
+        }
     }
 
     /**
@@ -479,9 +499,17 @@ public enum IntFormat {
 
             switch (inValue.getBits()) {
                 case 32:
-                    return Float.toString(Float.intBitsToFloat((int) inValue.getValue()));
+                    float f = Float.intBitsToFloat((int) inValue.getValue());
+                    if (Float.isFinite(f))
+                        return Float.toString(f);
+                    else
+                        return HEX_FORMATTER.formatToEdit(inValue);
                 case 64:
-                    return Double.longBitsToDouble(inValue.getValue()) + "d";
+                    double d = Double.longBitsToDouble(inValue.getValue());
+                    if (Double.isFinite(d))
+                        return d + "d";
+                    else
+                        return HEX_FORMATTER.formatToEdit(inValue);
                 default:
                     return HEX_FORMATTER.formatToEdit(inValue);
             }
@@ -526,6 +554,18 @@ public enum IntFormat {
                 return Float.floatToIntBits((float) val);
             else
                 return Double.doubleToLongBits(val);
+        }
+
+        @Override
+        public boolean isSeparatorInFrontOf(int bits, int bit) {
+            switch (bits) {
+                case 32:
+                    return bit == 31 || bit == 23;
+                case 64:
+                    return bit == 63 || bit == 52;
+                default:
+                    return HEX_FORMATTER.isSeparatorInFrontOf(bits, bit);
+            }
         }
     }
 
