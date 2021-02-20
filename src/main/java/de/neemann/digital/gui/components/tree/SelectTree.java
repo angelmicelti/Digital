@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * Tree to select items
@@ -29,6 +30,7 @@ import java.io.IOException;
 public class SelectTree extends JTree {
 
     private final ShapeFactory shapeFactory;
+    private Enumeration<TreePath> storedExpanded;
 
     /**
      * Create a new instance
@@ -65,7 +67,29 @@ public class SelectTree extends JTree {
         setToolTipText("");
 
         // open first child
-        expandPath(new TreePath(model.getTypedRoot().getChild(0).getPath()));
+        expandPath(new TreePath(model.getFirstLeafParent().getPath()));
+    }
+
+    /**
+     * Sets a new model to this SelectTree.
+     *
+     * @param newModel the new model
+     */
+    public void setModel(LibraryTreeModel newModel) {
+        LibraryTreeModel oldModel = (LibraryTreeModel) getModel();
+        if (!oldModel.isFiltered() && newModel.isFiltered())
+            storedExpanded = getExpandedDescendants(new TreePath(getModel().getRoot()));
+
+        oldModel.close();
+
+        boolean restore = oldModel.isFiltered() && !newModel.isFiltered();
+        super.setModel(newModel);
+        if (restore && storedExpanded != null) {
+            while (storedExpanded.hasMoreElements())
+                expandPath(storedExpanded.nextElement());
+            storedExpanded = null;
+        } else
+            expandPath(new TreePath(newModel.getFirstLeafParent().getPath()));
     }
 
     @Override

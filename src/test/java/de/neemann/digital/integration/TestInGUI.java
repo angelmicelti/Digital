@@ -13,6 +13,7 @@ import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.core.extern.External;
 import de.neemann.digital.core.io.In;
 import de.neemann.digital.core.io.Out;
+import de.neemann.digital.core.io.Probe;
 import de.neemann.digital.core.memory.ROM;
 import de.neemann.digital.core.wiring.Driver;
 import de.neemann.digital.draw.elements.Circuit;
@@ -169,7 +170,7 @@ public class TestInGUI extends TestCase {
         new GuiTester()
                 .delay(500)
                 .press("F5")
-                .mouseMove(100, 100)
+                .mouseMove(100, 110)
                 .delay(300)
                 .mouseClick(InputEvent.BUTTON1_DOWN_MASK)
                 .delay(200)
@@ -179,6 +180,30 @@ public class TestInGUI extends TestCase {
                 .add(new GuiTester.WindowCheck<>(Main.class, (gt, main) -> {
                     Circuit c = main.getCircuitComponent().getCircuit();
                     assertEquals(1, c.getElements().size());
+                }))
+                .execute();
+    }
+
+    public void testTreeViewSearch() {
+        new GuiTester()
+                .delay(500)
+                .press("F5")
+                .mouseMove(100, 65)
+                .delay(300)
+                .mouseClick(InputEvent.BUTTON1_DOWN_MASK)
+                .delay(200)
+                .type("probe")
+                .delay(200)
+                .mouseMove(100, 110)
+                .mouseClick(InputEvent.BUTTON1_DOWN_MASK)
+                .delay(200)
+                .mouseMove(400, 200)
+                .mouseClick(InputEvent.BUTTON1_DOWN_MASK)
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(Main.class, (gt, main) -> {
+                    Circuit c = main.getCircuitComponent().getCircuit();
+                    assertEquals(1, c.getElements().size());
+                    assertTrue(c.getElements().get(0).equalsDescription(Probe.DESCRIPTION));
                 }))
                 .execute();
     }
@@ -1195,14 +1220,13 @@ public class TestInGUI extends TestCase {
             xMin -= loc.x + SIZE * 5;
             yMin -= loc.y + SIZE * 2;
 
+            boolean firstWire = true;
             for (Wire w : circuit.getWires()) {
-                guiTester.mouseClickNow(w.p1.x - xMin, w.p1.y - yMin, InputEvent.BUTTON1_DOWN_MASK);
-                if (w.p1.x != w.p2.x && w.p1.y != w.p2.y)
-                    guiTester.typeNow("typed d");
-
-                guiTester.mouseClickNow(w.p2.x - xMin, w.p2.y - yMin, InputEvent.BUTTON1_DOWN_MASK);
-                Thread.sleep(50);
-                guiTester.mouseClickNow(w.p2.x - xMin, w.p2.y - yMin, InputEvent.BUTTON3_DOWN_MASK);
+                if (firstWire) {       // Draw first wire twice! Sometimes the first wire is lost and i can't figure out why!
+                    firstWire = false; // This is a dirty hack!
+                    drawWire(guiTester, xMin, yMin, w);
+                }
+                drawWire(guiTester, xMin, yMin, w);
             }
 
             for (VisualElement v : circuit.getElements()) {
@@ -1214,6 +1238,16 @@ public class TestInGUI extends TestCase {
                 guiTester.mouseClickNow(pos.x - xMin, pos.y - yMin, InputEvent.BUTTON1_DOWN_MASK);
                 Thread.sleep(400);
             }
+        }
+
+        private void drawWire(GuiTester guiTester, int xMin, int yMin, Wire w) throws InterruptedException {
+            guiTester.mouseClickNow(w.p1.x - xMin, w.p1.y - yMin, InputEvent.BUTTON1_DOWN_MASK);
+            if (w.p1.x != w.p2.x && w.p1.y != w.p2.y)
+                guiTester.typeNow("typed d");
+
+            guiTester.mouseClickNow(w.p2.x - xMin, w.p2.y - yMin, InputEvent.BUTTON1_DOWN_MASK);
+            Thread.sleep(50);
+            guiTester.mouseClickNow(w.p2.x - xMin, w.p2.y - yMin, InputEvent.BUTTON3_DOWN_MASK);
         }
     }
 
