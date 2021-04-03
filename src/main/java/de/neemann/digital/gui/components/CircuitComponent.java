@@ -131,6 +131,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private boolean hadFocusAtClick = true;
     private boolean lockMessageShown = false;
     private boolean antiAlias = true;
+    private double lastScaleX = 0;
 
     private Style highLightStyle = Style.HIGHLIGHT;
     private Circuit shallowCopy;
@@ -880,10 +881,11 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             getCircuitOrShallowCopy().drawTo(gr, highLighted, highLightStyle, modelSync);
             time = System.currentTimeMillis() - time;
 
-            if (time > 500) antiAlias = false;
+            boolean scaleHasChanged = lastScaleX != scaleX;
+            if (time > 500 && !scaleHasChanged) antiAlias = false;
             if (time < 50) antiAlias = true;
 
-//            System.out.println("repaint: " + time + "ms");
+            //System.out.println("repaint: " + time + "ms, "+scaleHasChanged);
 
             graphicHasChangedFlag = false;
         }
@@ -897,6 +899,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         gr.enableAntiAlias(activeMouseController.drawables() < 200);
         activeMouseController.drawTo(gr);
         gr2.setTransform(oldTrans);
+
+        lastScaleX = scaleX;
     }
 
     private void drawGrid(Graphics2D gr2) {
@@ -1520,6 +1524,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     private class MouseDispatcher extends MouseAdapter implements MouseMotionListener {
         private Vector pos;
         private boolean isMoved;
+        private int statusX;
+        private int statusY;
 
         @Override
         public void mousePressed(MouseEvent e) {
@@ -1538,6 +1544,8 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         }
 
         private boolean wasMoved(MouseEvent e) {
+            if (pos == null) // seems to happen in very rare cases
+                return false;
             Vector d = new Vector(e.getX(), e.getY()).sub(pos);
             return Math.abs(d.x) > DRAG_DISTANCE || Math.abs(d.y) > DRAG_DISTANCE;
         }
@@ -1549,6 +1557,18 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
                 toolTipHighlighted = false;
             }
             lastMousePos = new Vector(e.getX(), e.getY());
+
+            if (getCircuit().getAttributes().get(Keys.IS_GENERIC)) {
+                Vector p = getPosVector(e);
+                int x = Math.round(p.getXFloat() / SIZE);
+                int y = Math.round(p.getYFloat() / SIZE);
+                if (x != statusX || y != statusY) {
+                    getMain().setStatus("pos: " + x + ", " + y);
+                    statusX = x;
+                    statusY = y;
+                }
+            }
+
             activeMouseController.moved(e);
         }
 

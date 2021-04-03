@@ -691,6 +691,15 @@
         stored.
     </string>
 
+    <string name="elem_RAMAsync">RAM, async.</string>
+    <string name="elem_RAMAsync_tt">As long as we is set, it is stored. Corresponds to a very simple RAM, where the
+        address and data lines are directly connected to the decoders of the memory cells.</string>
+    <string name="elem_RAMAsync_pin_A">The address at which reading or writing takes place.</string>
+    <string name="elem_RAMAsync_pin_D">The data to be stored.</string>
+    <string name="elem_RAMAsync_pin_we">Write enable. As long as this input is set to 1, the value applied to D is
+        stored at the address applied to A whenever A or D is changed.</string>
+    <string name="elem_RAMAsync_pin_Q">Output of the stored data.</string>
+
     <string name="elem_RegisterFile">Register File</string>
     <string name="elem_RegisterFile_short">Register</string>
     <string name="elem_RegisterFile_tt">Memory with one port that allows to write and two ports that allow to read from
@@ -1199,6 +1208,7 @@
     </string>
     <string name="err_multipleGenericInitCodes">Multiple initialization codes for the generic elements.</string>
     <string name="err_inGenericInitCode">Error in the analysis of the generic initialization code.</string>
+    <string name="err_writeInCodeComponentsOnly">Global variables can only be written in code components.</string>
 
     <string name="err_ROM_noFileGivenToLoad">There is no file name available for the automatic reload!</string>
     <string name="err_virtualSignal_N_DeclaredTwiceInLine_N">Virtual signal {0} declared twice in line {1}!</string>
@@ -2084,6 +2094,16 @@
     <string name="msg_errorSettingModelToTestCase">Error while setting the test case row.</string>
 
     <string name="err_vgaModeNotDetected_N">Video mode was not detected ({0})</string>
+
+    <string name="menu_createBehavioralFixture">Create Behavior Fixing Test Case</string>
+    <string name="menu_createBehavioralFixture_tt">Creates a behavioral fixture from the circuit.
+        A behavioral fixture is a test case that fixes the current behavior.</string>
+    <string name="msg_fixesCreated_N">Fixtures: {0}</string>
+    <string name="btn_createTestLine">Create Fixture</string>
+    <string name="btn_createTestLine_tt">Creates a new fixture in the test case.</string>
+    <string name="btn_BehavioralFixtureComplete">Complete</string>
+    <string name="btn_BehavioralFixtureComplete_tt">Creates the test case component</string>
+    <string name="msg_errorCreatingTestCase">Error in the creation of the test case.</string>
 
     <string name="ok">OK</string>
     <string name="rot_0">0°</string>

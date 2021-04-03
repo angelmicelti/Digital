@@ -625,6 +625,15 @@
     </string>
     <string name="elem_RAMDualPort_pin_str">Ist diese Leitung high, wird das Datenwort gespeichert, wenn der Takt ansteigt.</string>
 
+    <string name="elem_RAMAsync">RAM, asynchron</string>
+    <string name="elem_RAMAsync_tt">Solange we gesetzt ist, wird gespeichert. Entspricht einem sehr einfachem RAM, bei
+        welchem die Adress- und Datenleitungen direkt mit den Decodern der Speicherzellen verbunden sind.</string>
+    <string name="elem_RAMAsync_pin_A">Die Adresse, an der gelesen bzw. geschrieben wird.</string>
+    <string name="elem_RAMAsync_pin_D">Die Daten, die gespeichert werden sollen.</string>
+    <string name="elem_RAMAsync_pin_we">Schreibfreigabe. Solange hier eine 1 anliegt, wird bei jeder Änderung von A oder D
+        der Wert der an D anliegt an der Adresse gespeichert welche bei A anliegt.</string>
+    <string name="elem_RAMAsync_pin_Q">Ausgabe der gespeicherten Daten.</string>
+
     <string name="elem_BlockRAMDualPort">Block-RAM, getrennte Ports</string>
     <string name="elem_BlockRAMDualPort_short">RAM</string>
     <string name="elem_BlockRAMDualPort_tt">Ein RAM Modul mit getrennten Daten-Anschlüssen für Lesen und Schreiben.
@@ -1210,7 +1219,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     </string>
     <string name="err_multipleGenericInitCodes">Mehrere Initialisierungscodes für die generischen Elemente.</string>
     <string name="err_inGenericInitCode">Fehler bei der Analyse des generischen Initialisierungscodes.</string>
-
+    <string name="err_writeInCodeComponentsOnly">Globale Variablen können nur in Code-Komponenten beschrieben werden.</string>
 
     <string name="err_vgaModeNotDetected_N">Videomodus wurde nicht erkannt ({0})</string>
     <string name="err_ROM_noFileGivenToLoad">Es ist kein Dateiname für das automatische Neuladen verfügbar!</string>
@@ -2074,6 +2083,17 @@ Stellen Sie sicher, dass der Flash-Vorgang abgeschlossen ist, bevor Sie diesen D
     <string name="msg_errorImportingSvg">Fehler beim Import der SVG-Datei.</string>
     <string name="msg_errorCreatingSvgTemplate">Fehler beim Erzeugen der SVG-Datei.</string>
     <string name="msg_couldNotCreateStats">Statistik konnte nicht erzeugt werden.</string>
+
+    <string name="menu_createBehavioralFixture">Verhalten fixierenden Testfall erstellen</string>
+    <string name="menu_createBehavioralFixture_tt">Erzeugt aus der Schaltung eine Verhaltensfixierung.
+        Eine Verhaltensfixierung ist ein Testfall, der das aktuelle Verhalten der Schaltung fixiert.
+    </string>
+    <string name="msg_fixesCreated_N">Fixierungen: {0}</string>
+    <string name="btn_createTestLine">Fixieren</string>
+    <string name="btn_createTestLine_tt">Erzeugt eine neue Zeile im Testfall.</string>
+    <string name="btn_BehavioralFixtureComplete">Abschließen</string>
+    <string name="btn_BehavioralFixtureComplete_tt">Erzeugt die Testfall-Komponente</string>
+    <string name="msg_errorCreatingTestCase">Fehler bei der Erzeugung des Testfalles.</string>
 
     <string name="msg_errorReadingToolchainConfig_N">Fehler beim Einladen der Toolchain-Konfiguration {0}</string>
     <string name="msg_commandStarted_N">Kommando "{0}" wurde gestartet! Die Bearbeitung kann etwas dauern!</string>
