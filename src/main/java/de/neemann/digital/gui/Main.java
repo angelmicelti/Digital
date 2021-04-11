@@ -72,9 +72,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -211,6 +209,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         circuitComponent.addKeyListener(new ModelKeyListener());
 
         statusLabel = new JLabel(" ");
+        statusLabel.setBorder(BorderFactory.createEmptyBorder(0, Screen.getInstance().getFontSize() * 2 / 3, 0, 0));
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
 
         setupStates();
@@ -1855,9 +1854,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             new SaveAsHelper(Main.this, fc, suffix).checkOverwrite(
                     file -> {
                         settings.setFile("exportDirectory", file.getParentFile());
-                        try (OutputStream out = new FileOutputStream(file)) {
-                            new Export(circuitComponent.getCircuit(), exportFactory).export(out);
-                        }
+                        new Export(circuitComponent.getCircuit(), exportFactory).export(file);
                     }
             );
         }
