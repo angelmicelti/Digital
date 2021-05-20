@@ -318,14 +318,6 @@ public class Parser {
         return emitter;
     }
 
-    private boolean isToken(Tokenizer.Token t) throws IOException {
-        if (tok.peek() == t) {
-            tok.next();
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Returns the value of the expression
      *
@@ -351,172 +343,27 @@ public class Parser {
         return value;
     }
 
-    /**
-     * Parses a string to a simple expression
-     *
-     * @return the expression
-     * @throws IOException     IOException
-     * @throws ParserException IOException
-     */
     private Expression parseExpression() throws IOException, ParserException {
-        Expression ac = parseSmalerEqual();
-        while (isToken(Tokenizer.Token.SMALER)) {
+        return parseExpression(OperatorPrecedence.lowest());
+    }
+
+    private Expression parseExpression(OperatorPrecedence op) throws IOException, ParserException {
+        Next next = getNextParser(op.getNextHigherPrecedence());
+        Expression ac = next.next();
+        while (tok.peek().getPrecedence() == op) {
+            Tokenizer.Binary function = tok.next().getFunction();
             Expression a = ac;
-            Expression b = parseGreater();
-            ac = (c) -> a.value(c) < b.value(c) ? 1 : 0;
+            Expression b = next.next();
+            ac = (c) -> function.op(a.value(c), b.value(c));
         }
         return ac;
     }
 
-    private Expression parseSmalerEqual() throws IOException, ParserException {
-        Expression ac = parseGreater();
-        while (isToken(Tokenizer.Token.SMALEREQUAL)) {
-            Expression a = ac;
-            Expression b = parseGreater();
-            ac = (c) -> a.value(c) <= b.value(c) ? 1 : 0;
-        }
-        return ac;
-    }
-
-    private Expression parseGreater() throws IOException, ParserException {
-        Expression ac = parseGreaterEqual();
-        while (isToken(Tokenizer.Token.GREATER)) {
-            Expression a = ac;
-            Expression b = parseEquals();
-            ac = (c) -> a.value(c) > b.value(c) ? 1 : 0;
-        }
-        return ac;
-    }
-
-    private Expression parseGreaterEqual() throws IOException, ParserException {
-        Expression ac = parseEquals();
-        while (isToken(Tokenizer.Token.GREATEREQUAL)) {
-            Expression a = ac;
-            Expression b = parseEquals();
-            ac = (c) -> a.value(c) >= b.value(c) ? 1 : 0;
-        }
-        return ac;
-    }
-
-    private Expression parseEquals() throws IOException, ParserException {
-        Expression ac = parseNotEquals();
-        while (isToken(Tokenizer.Token.EQUAL)) {
-            Expression a = ac;
-            Expression b = parseNotEquals();
-            ac = (c) -> a.value(c) == b.value(c) ? 1 : 0;
-        }
-        return ac;
-    }
-
-    private Expression parseNotEquals() throws IOException, ParserException {
-        Expression ac = parseOR();
-        while (isToken(Tokenizer.Token.LOG_NOT)) {
-            expect(Tokenizer.Token.EQUAL);
-            Expression a = ac;
-            Expression b = parseOR();
-            ac = (c) -> a.value(c) == b.value(c) ? 0 : 1;
-        }
-        return ac;
-    }
-
-    private Expression parseOR() throws IOException, ParserException {
-        Expression ac = parseXOR();
-        while (isToken(Tokenizer.Token.OR)) {
-            Expression a = ac;
-            Expression b = parseXOR();
-            ac = (c) -> a.value(c) | b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseXOR() throws IOException, ParserException {
-        Expression ac = parseAND();
-        while (isToken(Tokenizer.Token.XOR)) {
-            Expression a = ac;
-            Expression b = parseAND();
-            ac = (c) -> a.value(c) ^ b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseAND() throws IOException, ParserException {
-        Expression ac = parseShiftRight();
-        while (isToken(Tokenizer.Token.AND)) {
-            Expression a = ac;
-            Expression b = parseShiftRight();
-            ac = (c) -> a.value(c) & b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseShiftRight() throws IOException, ParserException {
-        Expression ac = parseShiftLeft();
-        while (isToken(Tokenizer.Token.SHIFTRIGHT)) {
-            Expression a = ac;
-            Expression b = parseShiftLeft();
-            ac = (c) -> a.value(c) >>> b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseShiftLeft() throws IOException, ParserException {
-        Expression ac = parseAdd();
-        while (isToken(Tokenizer.Token.SHIFTLEFT)) {
-            Expression a = ac;
-            Expression b = parseAdd();
-            ac = (c) -> a.value(c) << b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseAdd() throws IOException, ParserException {
-        Expression ac = parseSub();
-        while (isToken(Tokenizer.Token.ADD)) {
-            Expression a = ac;
-            Expression b = parseSub();
-            ac = (c) -> a.value(c) + b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseSub() throws IOException, ParserException {
-        Expression ac = parseMul();
-        while (isToken(Tokenizer.Token.SUB)) {
-            Expression a = ac;
-            Expression b = parseMul();
-            ac = (c) -> a.value(c) - b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseMul() throws IOException, ParserException {
-        Expression ac = parseDiv();
-        while (isToken(Tokenizer.Token.MUL)) {
-            Expression a = ac;
-            Expression b = parseDiv();
-            ac = (c) -> a.value(c) * b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseDiv() throws IOException, ParserException {
-        Expression ac = parseMod();
-        while (isToken(Tokenizer.Token.DIV)) {
-            Expression a = ac;
-            Expression b = parseMod();
-            ac = (c) -> a.value(c) / b.value(c);
-        }
-        return ac;
-    }
-
-    private Expression parseMod() throws IOException, ParserException {
-        Expression ac = parseIdent();
-        while (isToken(Tokenizer.Token.MOD)) {
-            Expression a = ac;
-            Expression b = parseIdent();
-            ac = (c) -> a.value(c) % b.value(c);
-        }
-        return ac;
+    private Next getNextParser(OperatorPrecedence pr) {
+        if (pr == null)
+            return this::parseIdent;
+        else
+            return () -> parseExpression(pr);
     }
 
     private Expression parseIdent() throws IOException, ParserException {
@@ -563,5 +410,9 @@ public class Parser {
             throw new ParserException(Lang.get("err_wrongNumOfArgsIn_N0_InLine_N1_found_N2_expected_N3", name, tok.getLine(), args.size(), f.getArgCount()));
 
         return (c) -> f.calcValue(c, args);
+    }
+
+    private interface Next {
+        Expression next() throws IOException, ParserException;
     }
 }

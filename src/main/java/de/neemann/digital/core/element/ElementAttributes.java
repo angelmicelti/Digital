@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.core.element;
 
+import de.neemann.digital.FileLocator;
 import de.neemann.digital.core.ValueFormatter;
 import de.neemann.digital.hdl.hgs.HGSMap;
 
@@ -72,6 +73,13 @@ public class ElementAttributes implements HGSMap {
                 value = (VALUE) value.toString();
                 attributes.put(key.getKey(), value);
             }
+
+            // needed to fix files with int pin numbers!
+            if (key == Keys.LAST_DATA_FILE && value instanceof String) {
+                value = (VALUE) new File(value.toString());
+                attributes.put(key.getKey(), value);
+            }
+
             return value;
         }
     }
@@ -207,7 +215,23 @@ public class ElementAttributes implements HGSMap {
     }
 
     /**
-     * Gets a file stored directly in the map
+     * Gets a file stored in the map
+     *
+     * @param key  the file key
+     * @param root the projects main folder
+     * @return the file
+     */
+    public File getFile(Key<File> key, File root) {
+        File f = get(key);
+        if (root != null)
+            f = new FileLocator(f).setLibraryRoot(root).locate();
+        return f;
+    }
+
+    /**
+     * Gets a file stored directly in the map.
+     * Intended to be used as a convenient function in the gui context.
+     * Not intended to be used in the model creation context.
      *
      * @param fileKey the file key
      * @return the file
@@ -347,4 +371,5 @@ public class ElementAttributes implements HGSMap {
             return null;
         return cache.remove(key);
     }
+
 }

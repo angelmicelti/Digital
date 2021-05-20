@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -143,7 +144,7 @@ public class AttributeDialog extends JDialog {
                 topMostTextComponent = ((EditorFactory.StringEditor) e).getTextComponent();
 
             final Key dependsOn = key.getDependsOn();
-            if (dependsOn != null) {
+            if (dependsOn != null && !addCheckBoxes) {
                 for (EditorHolder ed : editors) {
                     if (ed.key.getKey().equals(dependsOn.getKey())) {
                         ed.setDependantEditor(e, key.getCheckEnabled());
@@ -374,6 +375,17 @@ public class AttributeDialog extends JDialog {
         if (parent instanceof Main)
             return (Main) parent;
         return null;
+    }
+
+    /**
+     * @return the root file or null if not available
+     */
+    public File getRootFile() {
+        File root = null;
+        Main main = getMain();
+        if (main != null)
+            root = main.getLibrary().getRootFilePath();
+        return root;
     }
 
     /**

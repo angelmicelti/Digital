@@ -49,8 +49,8 @@ public class External extends Node implements Element {
     private final PortDefinition outs;
     private final ElementAttributes attr;
     private final ObservableValues outputs;
-    private final String code;
     private final String label;
+    private String code;
     private ObservableValues inputs;
     private ProcessInterface processInterface;
 
@@ -103,12 +103,15 @@ public class External extends Node implements Element {
 
     @Override
     public void init(Model model) throws NodeException {
+        if (label.isEmpty())
+            throw new NodeException(Lang.get("err_emptyLabelIsNotAllowed"));
+
         try {
             Application app = Application.create(type, attr);
             if (app == null)
                 throw new NodeException(Lang.get("err_errorCreatingProcess"), this, -1, null);
 
-            processInterface = app.start(label, code, ins, outs);
+            processInterface = app.start(label, code, ins, outs, model.getRootPath());
         } catch (IOException e) {
             throw new NodeException(Lang.get("err_errorCreatingProcess"), this, -1, null, e);
         }
@@ -122,5 +125,14 @@ public class External extends Node implements Element {
                 }
             }
         }, ModelEventType.CLOSED);
+    }
+
+    /**
+     * Sets the code to use.
+     *
+     * @param code the code
+     */
+    public void setCode(String code) {
+        this.code = code;
     }
 }

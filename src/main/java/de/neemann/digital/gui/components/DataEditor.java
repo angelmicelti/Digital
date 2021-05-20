@@ -23,12 +23,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.datatransfer.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * Used to edit ROM data fields.
@@ -36,8 +38,11 @@ import java.util.ArrayList;
  */
 public class DataEditor extends JDialog {
     private static final Color MYGRAY = new Color(230, 230, 230);
+    private static File lastUsedFileName;
     private final ValueFormatter addrFormat;
+    private final ValueFormatter dataFormat;
     private final int addrBits;
+    private final int dataBits;
     private final DataField localDataField;
     private final JTable table;
     private boolean ok = false;
@@ -59,6 +64,8 @@ public class DataEditor extends JDialog {
         super(SwingUtilities.windowForComponent(parent), Lang.get("key_Data"), modelIsRunning ? ModalityType.MODELESS : ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.addrBits = addrBits;
+        this.dataBits = dataBits;
+        this.dataFormat = dataFormat;
         if (dataFormat.isSuitedForAddresses())
             addrFormat = dataFormat;
         else
@@ -140,11 +147,10 @@ public class DataEditor extends JDialog {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JFileChooser fc = new MyFileChooser();
-                    if (fileName != null)
-                        fc.setSelectedFile(fileName);
+                    setFileNameTo(fc);
                     fc.setFileFilter(new FileNameExtensionFilter("hex", "hex"));
                     if (fc.showOpenDialog(DataEditor.this) == JFileChooser.APPROVE_OPTION) {
-                        fileName = fc.getSelectedFile();
+                        setFileName(fc.getSelectedFile());
                         try {
                             DataField dataRead = Importer.read(fc.getSelectedFile(), dataBits)
                                     .trimValues(addrBits, dataBits);
@@ -160,12 +166,11 @@ public class DataEditor extends JDialog {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JFileChooser fc = new MyFileChooser();
-                    if (fileName != null)
-                        fc.setSelectedFile(fileName);
+                    setFileNameTo(fc);
                     fc.setFileFilter(new FileNameExtensionFilter("hex", "hex"));
                     new SaveAsHelper(DataEditor.this, fc, "hex").checkOverwrite(
                             file -> {
-                                fileName = fc.getSelectedFile();
+                                setFileName(file);
                                 localDataField.saveTo(file);
                             }
                     );
@@ -175,9 +180,32 @@ public class DataEditor extends JDialog {
 
             menuBar.add(data);
 
-
             setJMenuBar(menuBar);
         }
+
+        new ToolTipAction(Lang.get("menu_paste")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+                try {
+                    Object data = clpbrd.getData(DataFlavor.stringFlavor);
+                    new PasteHandler(data.toString(), table).paste();
+                } catch (UnsupportedFlavorException | IOException e1) {
+                    new ErrorMessage(Lang.get("msg_errorPastingData")).addCause(e1).show();
+                }
+            }
+        }.setAcceleratorCTRLplus('V').enableAcceleratorIn(table);
+
+        new ToolTipAction(Lang.get("menu_copy")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = table.getSelectedRows();
+                if (rows.length > 0) {
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(new StringSelection(((MyTableModel) table.getModel()).toString(rows)), null);
+                }
+            }
+        }.setAcceleratorCTRLplus('C').enableAcceleratorIn(table);
 
         pack();
         if (getWidth() < 150)
@@ -250,14 +278,17 @@ public class DataEditor extends JDialog {
      * @param fileName the filename
      */
     public void setFileName(File fileName) {
-        this.fileName = fileName;
+        if (fileName.exists()) {
+            this.fileName = fileName;
+            lastUsedFileName = fileName;
+        }
     }
 
-    /**
-     * @return the file name last used
-     */
-    public File getFileName() {
-        return fileName;
+    private void setFileNameTo(JFileChooser fc) {
+        if (fileName != null)
+            fc.setSelectedFile(fileName);
+        else if (lastUsedFileName != null)
+            fc.setSelectedFile(lastUsedFileName);
     }
 
     /**
@@ -359,6 +390,20 @@ public class DataEditor extends JDialog {
                 fireEvent(new TableModelEvent(this, addr / cols));
             }
         }
+
+        public String toString(int[] rows) {
+            StringBuilder sb = new StringBuilder();
+            for (int r : rows) {
+                int offs = r * cols;
+                sb.append(addrFormat.formatToEdit(new Value(offs, addrBits)));
+                for (int c = 0; c < cols; c++) {
+                    long val = dataField.getDataWord(offs + c);
+                    sb.append("\t").append(dataFormat.formatToEdit(new Value(val, dataBits)));
+                }
+                sb.append(System.lineSeparator());
+            }
+            return sb.toString();
+        }
     }
 
     private static final class MyRenderer extends DefaultTableCellRenderer {
@@ -423,4 +468,62 @@ public class DataEditor extends JDialog {
             return value;
         }
     }
+
+    private static final class PasteHandler {
+        private final String data;
+        private final int yOrigin;
+        private final int xOrigin;
+        private final MyTableModel model;
+
+        /**
+         * Creates a new Paste handler
+         *
+         * @param data  the datastrin give by the systems clipboard
+         * @param table the tabel to insert the data to
+         */
+        private PasteHandler(String data, JTable table) {
+            this.data = data;
+            xOrigin = table.getSelectedColumn();
+            yOrigin = table.getSelectedRow();
+            model = (MyTableModel) table.getModel();
+        }
+
+        /**
+         * called to handle the paste action
+         */
+        private void paste() {
+            if (xOrigin >= 0 && yOrigin >= 0) {
+                StringTokenizer rows = new StringTokenizer(data, "\n\r");
+                int y = 0;
+                while (rows.hasMoreTokens()) {
+                    String line = rows.nextToken();
+                    StringTokenizer cols = new StringTokenizer(line, "\t");
+                    int x = 0;
+                    while (cols.hasMoreTokens()) {
+                        String cell = cols.nextToken();
+                        setData(xOrigin + x, yOrigin + y, cell.trim());
+                        x++;
+                    }
+                    y++;
+                }
+                model.fireEvent(new TableModelEvent(model));
+            }
+        }
+
+        private void setData(int col, int row, String value) {
+            if (col < model.getColumnCount() && row < model.getRowCount()) {
+                if (model.isCellEditable(row, col)) {
+                    Class<?> type = model.getColumnClass(col);
+                    if (type == Long.class) {
+                        try {
+                            model.setValueAt(Bits.decode(value), row, col);
+                        } catch (Bits.NumberFormatException e) {
+                            // do nothing on error
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

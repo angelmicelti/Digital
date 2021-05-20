@@ -11,6 +11,7 @@ import de.neemann.digital.core.extern.ProcessStarter;
 import de.neemann.digital.gui.Settings;
 import de.neemann.digital.hdl.model2.HDLException;
 import de.neemann.digital.hdl.printer.CodePrinter;
+import de.neemann.digital.hdl.printer.CodePrinterStr;
 import de.neemann.digital.integration.FileScanner;
 import de.neemann.digital.integration.Resources;
 import de.neemann.digital.integration.TestExamples;
@@ -31,7 +32,7 @@ public class VHDLSimulatorTest extends TestCase {
 
     /*
     public void testDebug() throws Exception {
-        File file = new File(Resources.getRoot(), "/dig/test/pinControl/nesting.dig");
+        File file = new File(Resources.getRoot(), "dig/external/ghdl/ghdlFile.dig");
 
         ToBreakRunner br = new ToBreakRunner(file);
         System.out.println(new VHDLGenerator(br.getLibrary(), new CodePrinterStr(true)).export(br.getCircuit()));
@@ -123,7 +124,7 @@ public class VHDLSimulatorTest extends TestCase {
             // check simulation in Digital
             new TestExamples().check(f);
         }).noOutput().scan(source);
-        assertEquals(4, tested);
+        assertEquals(5, tested);
     }
 
 

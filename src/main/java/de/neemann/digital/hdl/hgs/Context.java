@@ -7,6 +7,7 @@ package de.neemann.digital.hdl.hgs;
 
 import de.neemann.digital.FileLocator;
 import de.neemann.digital.core.Bits;
+import de.neemann.digital.core.extern.Application;
 import de.neemann.digital.core.memory.DataField;
 import de.neemann.digital.core.memory.importer.Importer;
 import de.neemann.digital.hdl.hgs.function.Func;
@@ -55,19 +56,24 @@ public class Context implements HGSMap {
         BUILT_IN.put("splitString", new FunctionSplitString());
         BUILT_IN.put("identifier", new FunctionIdentifier());
         BUILT_IN.put("loadHex", new FunctionLoadHex());
+        BUILT_IN.put("loadFile", new FunctionLoadFile());
         BUILT_IN.put("sizeOf", new Func(1, args -> Value.toArray(args[0]).hgsArraySize()));
     }
 
     private final Context parent;
     private final StringBuilder code;
     private final HashMap<String, Object> map;
+    private File rootPath;
     private boolean loggingEnabled = true;
 
     /**
      * Creates a new context
+     *
+     * @param rootPath the projects main folder
      */
-    public Context() {
+    public Context(File rootPath) {
         this(null, true);
+        this.rootPath = rootPath;
     }
 
     /**
@@ -109,6 +115,24 @@ public class Context implements HGSMap {
             else
                 return false;
         }
+    }
+
+    /**
+     * @return the models root path
+     */
+    public File getRootPath() {
+        if (parent != null)
+            return parent.getRootPath();
+        return rootPath;
+    }
+
+    /**
+     * Sets the models root path
+     *
+     * @param rootPath the models root path
+     */
+    public void setRootPath(File rootPath) {
+        this.rootPath = rootPath;
     }
 
     /**
@@ -657,14 +681,11 @@ public class Context implements HGSMap {
 
         @Override
         public Object call(Context c, ArrayList<Expression> args) throws HGSEvalException {
-            String name = args.get(0).value(c).toString();
+            File name = new File(args.get(0).value(c).toString());
             int dataBits = Value.toInt(args.get(1).value(c));
-            FileLocator fileLocator = new FileLocator(name);
-            if (c.contains(BASE_FILE_KEY))
-                fileLocator.setBaseFile((File) c.getVar(BASE_FILE_KEY));
-            File hexFile = fileLocator.locate();
+            File hexFile = new FileLocator(name).setLibraryRoot(c.getRootPath()).locate();
 
-            if (hexFile == null)
+            if (hexFile == null || !hexFile.exists())
                 throw new HGSEvalException("File " + name + " not found! Is circuit saved?");
 
             try {
@@ -673,6 +694,23 @@ public class Context implements HGSMap {
                 return dataField;
             } catch (IOException e) {
                 throw new HGSEvalException("error reading the file " + hexFile.getPath(), e);
+            }
+        }
+    }
+
+    private static final class FunctionLoadFile extends InnerFunction {
+        private FunctionLoadFile() {
+            super(1);
+        }
+
+        @Override
+        public Object call(Context c, ArrayList<Expression> args) throws HGSEvalException {
+            File f = new File(args.get(0).value(c).toString());
+            f = new FileLocator(f).setLibraryRoot(c.getRootPath()).locate();
+            try {
+                return Application.readCode(f);
+            } catch (IOException e) {
+                throw new HGSEvalException("error reading the file " + f.getPath(), e);
             }
         }
     }

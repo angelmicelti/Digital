@@ -12,8 +12,10 @@ import de.neemann.digital.core.element.ElementAttributes;
 import de.neemann.digital.core.element.ElementTypeDescription;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.core.extern.External;
+import de.neemann.digital.core.extern.ExternalFile;
 import de.neemann.digital.core.flipflops.*;
 import de.neemann.digital.core.io.*;
+import de.neemann.digital.core.io.telnet.Telnet;
 import de.neemann.digital.core.memory.*;
 import de.neemann.digital.core.pld.DiodeBackward;
 import de.neemann.digital.core.pld.DiodeForward;
@@ -128,7 +130,6 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(Clock.DESCRIPTION)
                         .add(Button.DESCRIPTION)
                         .add(DipSwitch.DESCRIPTION)
-                        .add(DummyElement.TEXTDESCRIPTION)
                         .add(Probe.DESCRIPTION)
                         .add(DummyElement.DATADESCRIPTION)
                         .add(ScopeTrigger.DESCRIPTION)
@@ -150,6 +151,7 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(new LibraryNode(Lang.get("lib_peripherals"))
                                 .add(Keyboard.DESCRIPTION)
                                 .add(Terminal.DESCRIPTION)
+                                .add(Telnet.DESCRIPTION)
                                 .add(VGA.DESCRIPTION)
                                 .add(MIDI.DESCRIPTION)
                         )
@@ -226,17 +228,22 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(TransGate.DESCRIPTION))
                 .add(new LibraryNode(Lang.get("lib_misc"))
                         .add(TestCaseElement.DESCRIPTION)
-                        .add(GenericInitCode.DESCRIPTION)
-                        .add(GenericCode.DESCRIPTION)
-                        .add(DummyElement.RECTDESCRIPTION)
+                        .add(new LibraryNode(Lang.get("lib_decoration"))
+                                .add(DummyElement.TEXTDESCRIPTION)
+                                .add(DummyElement.RECTDESCRIPTION))
+                        .add(new LibraryNode(Lang.get("lib_generic"))
+                                .add(GenericInitCode.DESCRIPTION)
+                                .add(GenericCode.DESCRIPTION))
+                        .add(new LibraryNode(Lang.get("lib_hdl"))
+                                .add(External.DESCRIPTION)
+                                .add(ExternalFile.DESCRIPTION)
+                                .add(PinControl.DESCRIPTION))
                         .add(PowerSupply.DESCRIPTION)
                         .add(BusSplitter.DESCRIPTION)
                         .add(Reset.DESCRIPTION)
                         .add(Break.DESCRIPTION)
                         .add(Stop.DESCRIPTION)
-                        .add(AsyncSeq.DESCRIPTION)
-                        .add(External.DESCRIPTION)
-                        .add(PinControl.DESCRIPTION));
+                        .add(AsyncSeq.DESCRIPTION));
 
         addExternalJarComponents(jarFile);
 

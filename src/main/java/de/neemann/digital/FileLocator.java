@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Helper to find a file if only the filename is known.
@@ -23,9 +25,8 @@ public class FileLocator {
     private final String filename;
     private File file;
     private FileHistory history;
-    private ElementLibrary library;
+    private File libraryRoot;
     private File baseFile;
-    private int fileCounter;
 
 
     /**
@@ -66,7 +67,21 @@ public class FileLocator {
      * @return this for chained calls
      */
     public FileLocator setLibrary(ElementLibrary library) {
-        this.library = library;
+        this.libraryRoot = library.getRootFilePath();
+        return this;
+    }
+
+    /**
+     * Sets the projects root folder
+     *
+     * @param libraryRoot the folder
+     * @return this for chained calls
+     */
+    public FileLocator setLibraryRoot(File libraryRoot) {
+        if (libraryRoot.isFile())
+            this.libraryRoot = libraryRoot.getParentFile();
+        else
+            this.libraryRoot = libraryRoot;
         return this;
     }
 
@@ -126,43 +141,41 @@ public class FileLocator {
             }
         }
 
-        if (library != null) {
-            final File rootFilePath = library.getRootFilePath();
-            if (rootFilePath != null) {
-                LOGGER.debug(filename + ": start library folder lookup");
-                fileCounter = 0;
-                File f = search(rootFilePath);
-                if (f != null) {
+        if (libraryRoot != null) {
+            LOGGER.debug(filename + ": start library folder lookup");
+            ArrayList<File> foundFiles = new ArrayList<>();
+            try {
+                search(libraryRoot, foundFiles, MAX_FILE_COUNTER);
+                if (foundFiles.size() == 1) {
                     LOGGER.debug(filename + " found in library folder");
-                    return f;
+                    return foundFiles.get(0);
                 }
+            } catch (IOException e) {
+                LOGGER.debug(filename + ": " + e.getMessage());
             }
         }
-
         LOGGER.debug(filename + " not found");
         return file;
     }
 
-    private File search(File path) {
-        if (fileCounter > MAX_FILE_COUNTER)
-            return null;
-
+    private int search(File path, ArrayList<File> foundFiles, int fileCounter) throws IOException {
         File[] list = path.listFiles();
         if (list != null) {
             for (File f : list) {
-                if (f.isFile() && f.getName().equals(filename))
-                    return f;
-                fileCounter++;
-            }
-            for (File f : list) {
-                if (f.isDirectory() && !f.getName().startsWith(".")) {
-                    File af = search(f);
-                    if (af != null)
-                        return af;
+                if (f.isFile() && f.getName().equals(filename)) {
+                    foundFiles.add(f);
+                    if (foundFiles.size() > 1)
+                        throw new IOException("multiple matching files: " + foundFiles);
                 }
+                fileCounter--;
+                if (fileCounter < 0)
+                    throw new IOException("to many files");
             }
+            for (File f : list)
+                if (f.isDirectory() && !f.getName().startsWith("."))
+                    fileCounter = search(f, foundFiles, fileCounter);
         }
-        return null;
+        return fileCounter;
     }
 
 }

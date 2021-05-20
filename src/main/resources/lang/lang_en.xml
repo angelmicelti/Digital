@@ -19,10 +19,7 @@
     <string name="btn_edit">Edit</string>
     <string name="btn_editFurther">Continue editing</string>
     <string name="btn_load">Load</string>
-    <string name="btn_reload">Reload</string>
-    <string name="btn_reload_tt">Reload last HEX file</string>
     <string name="btn_save">Save</string>
-    <string name="btn_saveAsHex_tt">Save as HEX file.</string>
     <string name="btn_create">Create</string>
     <string name="btn_create_tt">Create a circuit in a separate window</string>
     <string name="btn_editDetached">Edit detached</string>
@@ -52,7 +49,7 @@
     <string name="elem_Help_outputs">Outputs</string>
     <string name="elem_Help_attributes">Attributes</string>
     <string name="msg_search">search</string>
-
+    <string name="msg_errorPastingData">Error at pasting data!</string>
 
     <!-- logic -->
 
@@ -283,7 +280,18 @@
     <string name="elem_Terminal_pin_D">The data to write to the terminal</string>
     <string name="elem_Terminal_pin_en">A high at this input enables the clock input.</string>
 
+    <string name="elem_Telnet">Telnet</string>
+    <string name="elem_Telnet_tt">Allows a Telnet connection to the circuit.
+        It is possible to receive and send characters via Telnet.</string>
+    <string name="elem_Telnet_pin_out">Data output</string>
+    <string name="elem_Telnet_pin_av">Outputs a one if data is present.</string>
+    <string name="elem_Telnet_pin_in">The data to be sent.</string>
+    <string name="elem_Telnet_pin_C">Clock input</string>
+    <string name="elem_Telnet_pin_wr">If set, the input data byte is sent.</string>
+    <string name="elem_Telnet_pin_rd">If set, a received byte is output.</string>
+
     <string name="elem_VGA">VGA Monitor</string>
+    <string name="elem_VGA_short">VGA</string>
     <string name="elem_VGA_tt">Analyzes the incoming video signals and displays the corresponding graphic.
         Since the simulation cannot run in real time, the pixel clock is required in addition to the video signals.</string>
     <string name="elem_VGA_pin_R">The red color component</string>
@@ -984,6 +992,14 @@
         Is used to specify the behaviour of a component by VHDL or Verilog.
         The actual simulation of the behavior must be done with an external simulator.
         At present only the VHDL simulator ghdl and the verilog simulator Icarus Verilog are supported.
+        The label of the component must match the name of the entity or module!
+    </string>
+    <string name="elem_ExternalFile">External File</string>
+    <string name="elem_ExternalFile_tt">Component to execute an external process to calculate the logic function.
+        Is used to specify the behaviour of a component by VHDL or Verilog.
+        The actual simulation of the behavior must be done with an external simulator.
+        At present only the VHDL simulator ghdl and the verilog simulator Icarus Verilog are supported.
+        The label of the component must match the name of the entity or module!
     </string>
 
     <string name="elem_Diode">Diode</string>
@@ -1171,6 +1187,9 @@
         try again.
         If there are still problems, check the path to the IVerilog executable in the Digital settings.
     </string>
+    <string name="err_errorLoadingHDLFile_N">Error loading the HDL file {0}</string>
+    <string name="err_emptyLabelIsNotAllowed">A empty label is not allowed!</string>
+
     <string name="err_errorAnalysingCircuit_N">Error analysing the circuit: {0}</string>
     <string name="err_romNeedsALabelToBeExported">Every ROM needs a unique label to be exported!</string>
     <string name="err_lutNeedsALabelToBeExported">Every LUT needs a unique label to be exported!</string>
@@ -1219,6 +1238,7 @@
     <string name="err_csvToManyValues">Too many values in one line!</string>
     <string name="err_errorWritingFile_N">Error writing file {0}.</string>
     <string name="err_circuitContainsNoComponents">The circuit contains no components!</string>
+    <string name="err_couldNotCreateServer">Could not start the server!</string>
 
     <string name="key_AddrBits">Address Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Number of address bits used.</string>
@@ -1293,6 +1313,8 @@
     <string name="key_Height_tt">Height of symbol if this circuit is used as an component in an other circuit.</string>
     <string name="key_autoReload">Reload at model start</string><!-- ROM -->
     <string name="key_autoReload_tt">Reloads the HEX file every time the model is started.</string>
+    <string name="key_lastDataFile">File</string>
+    <string name="key_lastDataFile_tt">File to be loaded into the ROM.</string>
     <string name="key_flipSelPos">Flip selector position
     </string><!-- Driver, DriverInvSel, Multiplexer, Demultiplexer, Decoder -->
     <string name="key_flipSelPos_tt">This option allows you to move te selector pin to the opposite side of the
@@ -1477,6 +1499,8 @@
     </string>
     <string name="key_Code">Program code</string>
     <string name="key_Code_tt">The program code to be executed by the external application.</string>
+    <string name="key_CodeFile">Program code</string>
+    <string name="key_CodeFile_tt">The file containing the program code to be executed by the external application.</string>
     <string name="attr_panel_Options">Options</string>
     <string name="key_ghdlPath">GHDL</string>
     <string name="key_ghdlPath_tt">Path to the executable ghdl file. Only necessary if you want to use ghdl to simulate
@@ -1632,6 +1656,20 @@
     <string name="key_trigger_falling">falling edge</string>
     <string name="key_trigger_both">both edges</string>
 
+    <string name="key_probeMode">Display Mode</string>
+    <string name="key_probeMode_tt">Defines whether the value or a counter is to be displayed.</string>
+    <string name="key_probeMode_VALUE">Show Value</string>
+    <string name="key_probeMode_UP">Count on Rising Edge</string>
+    <string name="key_probeMode_DOWN">Count on Falling Edge</string>
+    <string name="key_probeMode_BOTH">Count both Edges</string>
+
+    <string name="key_telnetEscape">Telnet mode</string>
+    <string name="key_telnetEscape_tt">If set, the Telnet control commands are evaluated.
+        In addition, the server sends the SGA and ECHO commands. If this option is disabled,
+        the server is a simple TCP server.</string>
+    <string name="key_port">Port</string>
+    <string name="key_port_tt">The port to be opened by the server.</string>
+
     <string name="key_colorScheme">Color scheme</string>
     <string name="key_colorScheme_DEFAULT">Normal</string>
     <string name="key_colorScheme_DARK">Dark</string>
@@ -1691,6 +1729,9 @@
     <string name="lib_peripherals">Peripherals</string>
     <string name="lib_ram">RAM</string>
     <string name="lib_eeprom">EEPROM</string>
+    <string name="lib_decoration">Decoration</string>
+    <string name="lib_generic">Generic</string>
+    <string name="lib_hdl">VHDL/Verilog</string>
 
     <string name="cli_cli">Command Line Interface</string>
     <string name="cli_nonOptionalArgumentMissing_N">The non-optional argument {0} is missing.</string>
@@ -1713,6 +1754,7 @@
         defined in the test case. This can be useful if there are several possible solutions which may
         depend on different inputs.
     </string>
+    <string name="cli_help_test_verbose">If set, the value table is output in case of an error.</string>
     <string name="cli_thereAreTestFailures">Tests have failed.</string>
     <string name="cli_errorExecutingTests">An error has occurred during the execution of the tests.</string>
 
@@ -1737,6 +1779,7 @@
     <string name="menu_analyse_tt">Analyses the current circuit</string>
     <string name="menu_cut">Cut</string>
     <string name="menu_copy">Copy</string>
+    <string name="menu_copy_tt">Copy to clipboard</string>
     <string name="menu_custom">Custom</string>
     <string name="menu_library">Library</string>
     <string name="menu_delete">Delete components</string>
@@ -2305,6 +2348,18 @@ declare Bit = (Bus>>3)&1;
 </pre>
 <p>In this example, the 3rd bit is isolated from the 'Bus' signal and made available as
 the 'Bit' signal for the test. The circuit itself contains no output 'Bit'.</p>
+<h3>Functions</h3>
+<p>Available functions are:
+<dl>
+<dt>signExt([bits],[value])</dt>
+<dd>Extends the value [value] while preserving the sign to [bits] bits.</dd>
+<dt>random([max])</dt>
+<dd>Returns an integer random number. The maximum value is specified with [max].</dd>
+<dt>ite([cond],[then],[else])</dt>
+<dd>If the condition [cond] is true, the value [then] is returned, otherwise the value [else].</dd>
+</dl>
+</p>
+
 <h3>Processors</h3>
 <p>If processors are to be tested, an initialization of the processor is usually required.
 It is possible to perform this initialization within the test case.

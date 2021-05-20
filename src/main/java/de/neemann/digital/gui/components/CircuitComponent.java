@@ -60,6 +60,10 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
      * The delete icon, also used from {@link de.neemann.digital.gui.components.terminal.TerminalDialog}
      */
     public static final Icon ICON_DELETE = IconCreator.create("delete.png");
+    /**
+     * The copy icon, also used from {@link de.neemann.digital.gui.components.terminal.TerminalDialog}
+     */
+    public static final Icon ICON_COPY = IconCreator.create("edit-copy.png");
     private static final Icon ICON_UNDO = IconCreator.create("edit-undo.png");
     private static final Icon ICON_REDO = IconCreator.create("edit-redo.png");
     private static final ArrayList<Key> ATTR_LIST = new ArrayList<>();
@@ -431,7 +435,7 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     }
 
     private ToolTipAction createCopyAction(ShapeFactory shapeFactory) {
-        return new ToolTipAction(Lang.get("menu_copy")) {
+        return new ToolTipAction(Lang.get("menu_copy"), ICON_COPY) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ArrayList<Movable> elements = getSelectedElements(shapeFactory);
@@ -1665,16 +1669,19 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
     }
 
 
-    private VisualElement getVisualElement(Vector pos, boolean includeText) {
-        VisualElement vp = null;
+    private SearchResult getVisualElement(Vector pos, boolean includeText) {
         List<VisualElement> list = getCircuit().getElementListAt(pos, includeText);
         if (list.size() == 1)
-            vp = list.get(0);
+            return new SearchResult(SearchResult.State.FOUND, list.get(0));
         else if (list.size() > 1) {
             ItemPicker<VisualElement> picker = new ItemPicker<>(parent, list);
-            vp = picker.select();
+            VisualElement vp = picker.select();
+            if (vp == null)
+                return new SearchResult(SearchResult.State.CANCELED, null);
+            else
+                return new SearchResult(SearchResult.State.FOUND, vp);
         }
-        return vp;
+        return new SearchResult(SearchResult.State.NONE, null);
     }
 
     //CHECKSTYLE.ON: FinalClass
@@ -1699,23 +1706,29 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
             Vector pos = getPosVector(e);
 
             if (mouse.isSecondaryClick(e)) {
-                VisualElement vp = getVisualElement(pos, true);
-                if (vp != null)
-                    editAttributes(vp, e);
+                SearchResult sel = getVisualElement(pos, true);
+                if (sel.getVisualElement() != null)
+                    editAttributes(sel.getVisualElement(), e);
             } else if (mouse.isPrimaryClick(e) && hadFocusAtClick) {
-                VisualElement vp = getVisualElement(pos, false);
-                if (vp != null) {
-                    if (vp.isPinPos(raster(pos)) && !mouse.isClickModifier(e)) {
-                        if (!isLocked()) mouseWireRect.activate(pos);
-                    } else
-                        mouseMoveElement.activate(vp, pos);
-                } else if (!isLocked()) {
-                    if (mouse.isClickModifier(e)) {
-                        Wire wire = getCircuit().getWireAt(pos, SIZE2);
-                        if (wire != null)
-                            mouseMoveWire.activate(wire, pos);
-                    } else
-                        mouseWireRect.activate(pos);
+                SearchResult sel = getVisualElement(pos, false);
+                switch (sel.getState()) {
+                    case FOUND:
+                        VisualElement vp = sel.getVisualElement();
+                        if (vp.isPinPos(raster(pos)) && !mouse.isClickModifier(e)) {
+                            if (!isLocked()) mouseWireRect.activate(pos);
+                        } else
+                            mouseMoveElement.activate(vp, pos);
+                        break;
+                    case NONE:
+                        if (!isLocked()) {
+                            if (mouse.isClickModifier(e)) {
+                                Wire wire = getCircuit().getWireAt(pos, SIZE2);
+                                if (wire != null)
+                                    mouseMoveWire.activate(wire, pos);
+                            } else
+                                mouseWireRect.activate(pos);
+                        }
+                        break;
                 }
             }
         }
@@ -2772,9 +2785,9 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
         @Override
         void clicked(MouseEvent e) {
             Vector pos = getPosVector(e);
-            VisualElement vp = getVisualElement(pos, true);
-            if (vp != null)
-                wizardNotification.notify(vp);
+            SearchResult sel = getVisualElement(pos, true);
+            if (sel.getVisualElement() != null)
+                wizardNotification.notify(sel.getVisualElement());
         }
 
         @Override
@@ -2811,5 +2824,25 @@ public class CircuitComponent extends JComponent implements ChangedListener, Lib
          * @param modification the modification
          */
         void modified(Modification<Circuit> modification);
+    }
+
+    private static final class SearchResult {
+        private final State state;
+        private final VisualElement visualElement;
+
+        enum State {NONE, FOUND, CANCELED}
+
+        private SearchResult(State state, VisualElement visualElement) {
+            this.state = state;
+            this.visualElement = visualElement;
+        }
+
+        private State getState() {
+            return state;
+        }
+
+        private VisualElement getVisualElement() {
+            return visualElement;
+        }
     }
 }

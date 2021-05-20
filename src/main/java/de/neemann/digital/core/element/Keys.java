@@ -12,6 +12,7 @@ import de.neemann.digital.core.arithmetic.LeftRightFormat;
 import de.neemann.digital.core.extern.Application;
 import de.neemann.digital.core.io.CommonConnectionType;
 import de.neemann.digital.core.io.InValue;
+import de.neemann.digital.core.io.ProbeMode;
 import de.neemann.digital.core.memory.DataField;
 import de.neemann.digital.core.memory.rom.ROMManger;
 import de.neemann.digital.draw.graphics.Orientation;
@@ -102,6 +103,15 @@ public final class Keys {
     public static final Key.KeyInteger INPUT_COUNT  // needs to have the same default value as ADDR_BITS!!!  see de.neemann.digital.gui.components.EditorFactory#DataFieldEditor
             = new Key.KeyInteger("Inputs", 2)
             .setComboBoxValues(2, 3, 4, 5)
+            .setMin(2);
+
+    /**
+     * number of inputs in the LUT
+     */
+    public static final Key.KeyInteger LUT_INPUT_COUNT
+            = new Key.KeyInteger("Inputs", 6)
+            .setComboBoxValues(2, 3, 4, 5, 6)
+            .setMax(20)
             .setMin(2);
 
 
@@ -382,6 +392,12 @@ public final class Keys {
             = new Key<>("autoReload", false).setSecondary();
 
     /**
+     * The last used ROM data file
+     */
+    public static final Key<File> LAST_DATA_FILE
+            = new Key.KeyFile("lastDataFile", new File("")).setDependsOn(AUTO_RELOAD_ROM).setSecondary();
+
+    /**
      * flag to show the data table window
      */
     public static final Key<Boolean> SHOW_DATA_TABLE
@@ -501,6 +517,11 @@ public final class Keys {
             = new Key.KeyEnum<>("intFormat", IntFormat.def, IntFormat.values()).setSecondary();
 
     /**
+     * output format for numbers
+     */
+    public static final Key<ProbeMode> PROBE_MODE
+            = new Key.KeyEnum<>("probeMode", ProbeMode.VALUE, ProbeMode.values());
+    /**
      * fixed point fractional binary digits
      */
     public static final Key<Integer> FIXED_POINT
@@ -575,7 +596,7 @@ public final class Keys {
      * Used to enable the storage of the last state in the Seven Seg display.
      */
     public static final Key<Boolean> LED_PERSISTENCE
-            = new Key<>("ledPersistence", false).allowGroupEdit();
+            = new Key<>("ledPersistence", false).allowGroupEdit().setDependsOn(COMMON_CONNECTION);
 
     /**
      * Fitter for the atf15xx
@@ -727,6 +748,11 @@ public final class Keys {
      */
     public static final Key.LongString EXTERNAL_CODE
             = new Key.LongString("Code").setRows(30).setColumns(80).setLineNumbers(true);
+    /**
+     * The code to be executed by the external process
+     */
+    public static final Key.KeyFile EXTERNAL_CODE_FILE
+            = new Key.KeyFile("CodeFile", new File(""));
 
     /**
      * Path to ghdl
@@ -906,5 +932,17 @@ public final class Keys {
     public static final Key.KeyEnum<ScopeTrigger.Trigger> TRIGGER =
             new Key.KeyEnum<>("trigger", ScopeTrigger.Trigger.both, ScopeTrigger.Trigger.values());
 
+    /**
+     * Selects the telnet port
+     */
+    public static final Key.KeyInteger PORT =
+            new Key.KeyInteger("port", 23)
+                    .setMin(1)
+                    .setMax((1 << 16) - 1);
+    /**
+     * Telnet escape
+     */
+    public static final Key<Boolean> TELNET_ESCAPE =
+            new Key<>("telnetEscape", true).allowGroupEdit();
 
 }
